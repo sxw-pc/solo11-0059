@@ -1,0 +1,5 @@
+user_id,event_type,amount,status
+1,click,10,ok
+7,view,5000,
+30,purchase,1200,ok
+2,click,10,ok

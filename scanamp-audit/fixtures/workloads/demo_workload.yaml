@@ -1,0 +1,27 @@
+schema_version: "1.0"
+description: Demo workload that exercises every diagnostic rule
+queries:
+  - id: q01_partition_plus_amount
+    description: Two-day alpha slice with a selective amount filter
+    where: "dt BETWEEN '2024-01-01' AND '2024-01-02' AND region = 'alpha' AND amount > 1000"
+  - id: q02_data_only_event
+    description: No partition predicate, filters only on event_type
+    where: "event_type = 'click'"
+  - id: q03_function_dt
+    description: Partition column wrapped in substr, cannot be pruned
+    where: "substr(dt, 1, 7) = '2024-01'"
+  - id: q04_or_branches
+    description: Two disjoint selective branches joined by OR
+    where: "(dt = '2024-01-01' AND region = 'alpha' AND amount > 4000) OR (dt = '2024-01-03' AND amount < 1000)"
+  - id: q05_missing_user_stats
+    description: Alpha slice filtering a column without statistics
+    where: "region = 'alpha' AND user_id = 42"
+  - id: q06_wide_date_range
+    description: Broad date lower bound hits every partition
+    where: "dt >= '2024-01-01'"
+  - id: q07_null_status
+    description: IS NULL on a data column with no partition filter
+    where: "status IS NULL"
+  - id: q08_in_and_between
+    description: IN on a partition column plus BETWEEN on an integer column
+    where: "region IN ('alpha', 'beta') AND event_type != 'view' AND user_id BETWEEN 10 AND 500"

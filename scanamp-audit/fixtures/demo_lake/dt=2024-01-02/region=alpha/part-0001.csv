@@ -1,0 +1,4 @@
+user_id,event_type,amount,status
+21,view,50,ok
+22,view,200,ok
+23,view,120,ok

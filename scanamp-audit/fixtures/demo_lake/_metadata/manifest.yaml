@@ -1,0 +1,215 @@
+table: demo_events
+description: Synthetic event table for the scanamp-audit demo
+partition_columns:
+  - name: dt
+    type: date
+  - name: region
+    type: string
+columns:
+  - name: user_id
+    type: integer
+  - name: event_type
+    type: string
+  - name: amount
+    type: float
+  - name: status
+    type: string
+files:
+  - path: dt=2024-01-01/region=alpha/part-0001.csv
+    partition_values:
+      dt: "2024-01-01"
+      region: alpha
+    row_count: 120
+    byte_size: 94
+    columns:
+      user_id:
+        type: integer
+        has_stats: false
+      event_type:
+        type: string
+        min: click
+        max: view
+        null_count: 0
+        distinct_count: 3
+        has_stats: true
+      amount:
+        type: float
+        min: 10.0
+        max: 5000.0
+        null_count: 0
+        distinct_count: 3
+        has_stats: true
+      status:
+        type: string
+        min: ok
+        max: ok
+        null_count: 1
+        distinct_count: 1
+        has_stats: true
+  - path: dt=2024-01-01/region=alpha/part-0002.csv
+    partition_values:
+      dt: "2024-01-01"
+      region: alpha
+    row_count: 80
+    byte_size: 83
+    columns:
+      user_id:
+        type: integer
+        has_stats: false
+      event_type:
+        type: string
+        min: click
+        max: view
+        null_count: 0
+        distinct_count: 3
+        has_stats: true
+      amount:
+        type: float
+        min: 200.0
+        max: 800.0
+        null_count: 0
+        distinct_count: 3
+        has_stats: true
+      status:
+        type: string
+        min: ok
+        max: ok
+        null_count: 0
+        distinct_count: 1
+        has_stats: true
+  - path: dt=2024-01-01/region=beta/part-0001.csv
+    partition_values:
+      dt: "2024-01-01"
+      region: delta
+    row_count: 100
+    byte_size: 78
+    columns:
+      user_id:
+        type: integer
+        min: 5
+        max: 10
+        null_count: 0
+        distinct_count: 3
+        has_stats: true
+      event_type:
+        type: string
+        min: click
+        max: view
+        null_count: 0
+        distinct_count: 3
+        has_stats: true
+      amount:
+        type: float
+        min: 50.0
+        max: 600.0
+        null_count: 0
+        distinct_count: 3
+        has_stats: true
+      status:
+        type: string
+        min: ok
+        max: ok
+        null_count: 1
+        distinct_count: 1
+        has_stats: true
+  - path: dt=2024-01-02/region=alpha/part-0001.csv
+    partition_values:
+      dt: "2024-01-02"
+      region: alpha
+    row_count: 90
+    byte_size: 77
+    columns:
+      user_id:
+        type: integer
+        has_stats: false
+      event_type:
+        type: string
+        min: view
+        max: view
+        null_count: 0
+        distinct_count: 1
+        has_stats: true
+      amount:
+        type: float
+        min: 50.0
+        max: 200.0
+        null_count: 0
+        distinct_count: 3
+        has_stats: true
+      status:
+        type: string
+        min: ok
+        max: ok
+        null_count: 0
+        distinct_count: 1
+        has_stats: true
+  - path: dt=2024-01-02/region=beta/part-0001.csv
+    partition_values:
+      dt: "2024-01-02"
+      region: beta
+    row_count: 110
+    byte_size: 87
+    columns:
+      user_id:
+        type: integer
+        min: 5
+        max: 900
+        null_count: 0
+        distinct_count: 3
+        has_stats: true
+      event_type:
+        type: string
+        min: purchase
+        max: purchase
+        null_count: 0
+        distinct_count: 1
+        has_stats: true
+      amount:
+        type: float
+        min: 300.0
+        max: 4500.0
+        null_count: 0
+        distinct_count: 3
+        has_stats: true
+      status:
+        type: string
+        min: ok
+        max: ok
+        null_count: 2
+        distinct_count: 1
+        has_stats: true
+  - path: dt=2024-01-03/region=gamma/part-0001.csv
+    partition_values:
+      dt: "2024-01-03"
+      region: gamma
+    row_count: 70
+    byte_size: 78
+    columns:
+      user_id:
+        type: integer
+        min: 1
+        max: 200
+        null_count: 0
+        distinct_count: 3
+        has_stats: true
+      event_type:
+        type: string
+        min: click
+        max: view
+        null_count: 0
+        distinct_count: 2
+        has_stats: true
+      amount:
+        type: float
+        min: 5.0
+        max: 900.0
+        null_count: 0
+        distinct_count: 3
+        has_stats: true
+      status:
+        type: string
+        min: ok
+        max: ok
+        null_count: 0
+        distinct_count: 1
+        has_stats: true

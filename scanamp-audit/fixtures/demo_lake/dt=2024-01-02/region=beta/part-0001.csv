@@ -1,0 +1,4 @@
+user_id,event_type,amount,status
+5,purchase,300,
+900,purchase,4500,ok
+40,purchase,900,

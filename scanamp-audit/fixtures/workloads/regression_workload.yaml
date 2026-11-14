@@ -1,0 +1,12 @@
+schema_version: "1.0"
+description: Small stable workload used for regression checks
+queries:
+  - id: r01_alpha_day
+    description: Exact day and region
+    where: "dt = '2024-01-01' AND region = 'alpha'"
+  - id: r02_partition_union
+    description: Partition-only OR across gamma and a day
+    where: "region = 'gamma' OR dt = '2024-01-02'"
+  - id: r03_amount_range
+    description: Statistical range without a partition filter
+    where: "amount BETWEEN 100 AND 1000 AND status IS NOT NULL"

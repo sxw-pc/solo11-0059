@@ -1,0 +1,264 @@
+{
+  "counts": {
+    "critical": 2,
+    "diagnostics": 13,
+    "info": 4,
+    "queries": 8,
+    "warning": 7
+  },
+  "diagnostics": [
+    {
+      "id": "diag-0001",
+      "query_id": "q03_function_dt",
+      "rule_id": "FUNCTION_WRAPPED_PARTITION",
+      "severity": "critical"
+    },
+    {
+      "id": "diag-0002",
+      "query_id": null,
+      "rule_id": "PATH_MANIFEST_MISMATCH",
+      "severity": "critical"
+    },
+    {
+      "id": "diag-0003",
+      "query_id": "q05_missing_user_stats",
+      "rule_id": "LOW_SELECTIVITY_PARTITION",
+      "severity": "warning"
+    },
+    {
+      "id": "diag-0004",
+      "query_id": "q04_or_branches",
+      "rule_id": "OR_BRANCH_BLOWUP",
+      "severity": "warning"
+    },
+    {
+      "id": "diag-0005",
+      "query_id": "q02_data_only_event",
+      "rule_id": "PARTITION_KEY_UNFILTERED",
+      "severity": "warning"
+    },
+    {
+      "id": "diag-0006",
+      "query_id": "q07_null_status",
+      "rule_id": "PARTITION_KEY_UNFILTERED",
+      "severity": "warning"
+    },
+    {
+      "id": "diag-0007",
+      "query_id": "q05_missing_user_stats",
+      "rule_id": "STATS_MISSING",
+      "severity": "warning"
+    },
+    {
+      "id": "diag-0008",
+      "query_id": "q08_in_and_between",
+      "rule_id": "STATS_MISSING",
+      "severity": "warning"
+    },
+    {
+      "id": "diag-0009",
+      "query_id": "q03_function_dt",
+      "rule_id": "UNKNOWN_PREDICATE_CONSERVATIVE",
+      "severity": "warning"
+    },
+    {
+      "id": "diag-0010",
+      "query_id": "q02_data_only_event",
+      "rule_id": "HIGH_CARDINALITY_OVERPARTITION",
+      "severity": "info"
+    },
+    {
+      "id": "diag-0011",
+      "query_id": "q03_function_dt",
+      "rule_id": "HIGH_CARDINALITY_OVERPARTITION",
+      "severity": "info"
+    },
+    {
+      "id": "diag-0012",
+      "query_id": "q06_wide_date_range",
+      "rule_id": "HIGH_CARDINALITY_OVERPARTITION",
+      "severity": "info"
+    },
+    {
+      "id": "diag-0013",
+      "query_id": "q07_null_status",
+      "rule_id": "HIGH_CARDINALITY_OVERPARTITION",
+      "severity": "info"
+    }
+  ],
+  "fingerprints": {
+    "config": "7e134916001af3ed78bfef14261038fc643fc0f922a99473ee432f449ac3ec0b",
+    "manifest": "4a854e74c38671a9a3e5f875e942e39054c805450411792ba821a57a0cecfd74",
+    "workload": "1222003d8892fbc4ab1b5bc6d01080e803a34e475b80c7a2ef63f42595d385e4"
+  },
+  "queries": [
+    {
+      "diagnostic_count": 0,
+      "estimated_matched_bytes": 75,
+      "estimated_matched_rows": 96,
+      "id": "q01_partition_plus_amount",
+      "partition_prune_ratio": 0.5,
+      "scan_amplification": 1.253333,
+      "scanned_bytes": 94,
+      "scanned_files": 1,
+      "scanned_rows": 120,
+      "selected_partitions": 2,
+      "stats_prune_ratio": 0.666667,
+      "where": "dt BETWEEN '2024-01-01' AND '2024-01-02' AND region = 'alpha' AND amount > 1000"
+    },
+    {
+      "diagnostic_count": 2,
+      "estimated_matched_bytes": 124,
+      "estimated_matched_rows": 135,
+      "id": "q02_data_only_event",
+      "partition_prune_ratio": 0.0,
+      "scan_amplification": 2.685484,
+      "scanned_bytes": 333,
+      "scanned_files": 4,
+      "scanned_rows": 370,
+      "selected_partitions": 5,
+      "stats_prune_ratio": 0.333333,
+      "where": "event_type = 'click'"
+    },
+    {
+      "diagnostic_count": 3,
+      "estimated_matched_bytes": 249,
+      "estimated_matched_rows": 285,
+      "id": "q03_function_dt",
+      "partition_prune_ratio": 0.0,
+      "scan_amplification": 1.995984,
+      "scanned_bytes": 497,
+      "scanned_files": 6,
+      "scanned_rows": 570,
+      "selected_partitions": 5,
+      "stats_prune_ratio": 0.0,
+      "where": "substr(dt, 1, 7) = '2024-01'"
+    },
+    {
+      "diagnostic_count": 1,
+      "estimated_matched_bytes": 97,
+      "estimated_matched_rows": 94,
+      "id": "q04_or_branches",
+      "partition_prune_ratio": 0.5,
+      "scan_amplification": 1.773196,
+      "scanned_bytes": 172,
+      "scanned_files": 2,
+      "scanned_rows": 190,
+      "selected_partitions": 2,
+      "stats_prune_ratio": 0.333333,
+      "where": "(dt = '2024-01-01' AND region = 'alpha' AND amount > 4000) OR (dt = '2024-01-03' AND amount < 1000)"
+    },
+    {
+      "diagnostic_count": 2,
+      "estimated_matched_bytes": 127,
+      "estimated_matched_rows": 145,
+      "id": "q05_missing_user_stats",
+      "partition_prune_ratio": 0.5,
+      "scan_amplification": 2.0,
+      "scanned_bytes": 254,
+      "scanned_files": 3,
+      "scanned_rows": 290,
+      "selected_partitions": 2,
+      "stats_prune_ratio": 0.0,
+      "where": "region = 'alpha' AND user_id = 42"
+    },
+    {
+      "diagnostic_count": 1,
+      "estimated_matched_bytes": 497,
+      "estimated_matched_rows": 570,
+      "id": "q06_wide_date_range",
+      "partition_prune_ratio": 0.0,
+      "scan_amplification": 1.0,
+      "scanned_bytes": 497,
+      "scanned_files": 6,
+      "scanned_rows": 570,
+      "selected_partitions": 5,
+      "stats_prune_ratio": 0.0,
+      "where": "dt >= '2024-01-01'"
+    },
+    {
+      "diagnostic_count": 2,
+      "estimated_matched_bytes": 4,
+      "estimated_matched_rows": 4,
+      "id": "q07_null_status",
+      "partition_prune_ratio": 0.0,
+      "scan_amplification": 64.75,
+      "scanned_bytes": 259,
+      "scanned_files": 3,
+      "scanned_rows": 330,
+      "selected_partitions": 5,
+      "stats_prune_ratio": 0.5,
+      "where": "status IS NULL"
+    },
+    {
+      "diagnostic_count": 1,
+      "estimated_matched_bytes": 107,
+      "estimated_matched_rows": 127,
+      "id": "q08_in_and_between",
+      "partition_prune_ratio": 0.333333,
+      "scan_amplification": 2.46729,
+      "scanned_bytes": 264,
+      "scanned_files": 3,
+      "scanned_rows": 310,
+      "selected_partitions": 3,
+      "stats_prune_ratio": 0.25,
+      "where": "region IN ('alpha', 'beta') AND event_type != 'view' AND user_id BETWEEN 10 AND 500"
+    }
+  ],
+  "ranking": [
+    {
+      "id": "q07_null_status",
+      "scan_amplification": 64.75
+    },
+    {
+      "id": "q02_data_only_event",
+      "scan_amplification": 2.685484
+    },
+    {
+      "id": "q08_in_and_between",
+      "scan_amplification": 2.46729
+    },
+    {
+      "id": "q05_missing_user_stats",
+      "scan_amplification": 2.0
+    },
+    {
+      "id": "q03_function_dt",
+      "scan_amplification": 1.995984
+    },
+    {
+      "id": "q04_or_branches",
+      "scan_amplification": 1.773196
+    },
+    {
+      "id": "q01_partition_plus_amount",
+      "scan_amplification": 1.253333
+    },
+    {
+      "id": "q06_wide_date_range",
+      "scan_amplification": 1.0
+    }
+  ],
+  "run_id": "demo-run",
+  "scan": {
+    "estimated_matched_bytes": 1280,
+    "scan_amplification": 1.851562,
+    "scanned_bytes": 2370,
+    "scanned_files": 28,
+    "table_bytes": 497,
+    "table_files": 6,
+    "table_rows": 570
+  },
+  "schema_version": "1.0",
+  "table": {
+    "byte_size": 497,
+    "file_count": 6,
+    "name": "demo_events",
+    "partition_columns": [
+      "dt",
+      "region"
+    ],
+    "partition_count": 5,
+    "row_count": 570
+  }
+}

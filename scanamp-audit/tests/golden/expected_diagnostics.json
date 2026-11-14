@@ -1,0 +1,80 @@
+[
+  {
+    "id": "diag-0001",
+    "query_id": "q03_function_dt",
+    "rule_id": "FUNCTION_WRAPPED_PARTITION",
+    "severity": "critical"
+  },
+  {
+    "id": "diag-0002",
+    "query_id": null,
+    "rule_id": "PATH_MANIFEST_MISMATCH",
+    "severity": "critical"
+  },
+  {
+    "id": "diag-0003",
+    "query_id": "q05_missing_user_stats",
+    "rule_id": "LOW_SELECTIVITY_PARTITION",
+    "severity": "warning"
+  },
+  {
+    "id": "diag-0004",
+    "query_id": "q04_or_branches",
+    "rule_id": "OR_BRANCH_BLOWUP",
+    "severity": "warning"
+  },
+  {
+    "id": "diag-0005",
+    "query_id": "q02_data_only_event",
+    "rule_id": "PARTITION_KEY_UNFILTERED",
+    "severity": "warning"
+  },
+  {
+    "id": "diag-0006",
+    "query_id": "q07_null_status",
+    "rule_id": "PARTITION_KEY_UNFILTERED",
+    "severity": "warning"
+  },
+  {
+    "id": "diag-0007",
+    "query_id": "q05_missing_user_stats",
+    "rule_id": "STATS_MISSING",
+    "severity": "warning"
+  },
+  {
+    "id": "diag-0008",
+    "query_id": "q08_in_and_between",
+    "rule_id": "STATS_MISSING",
+    "severity": "warning"
+  },
+  {
+    "id": "diag-0009",
+    "query_id": "q03_function_dt",
+    "rule_id": "UNKNOWN_PREDICATE_CONSERVATIVE",
+    "severity": "warning"
+  },
+  {
+    "id": "diag-0010",
+    "query_id": "q02_data_only_event",
+    "rule_id": "HIGH_CARDINALITY_OVERPARTITION",
+    "severity": "info"
+  },
+  {
+    "id": "diag-0011",
+    "query_id": "q03_function_dt",
+    "rule_id": "HIGH_CARDINALITY_OVERPARTITION",
+    "severity": "info"
+  },
+  {
+    "id": "diag-0012",
+    "query_id": "q06_wide_date_range",
+    "rule_id": "HIGH_CARDINALITY_OVERPARTITION",
+    "severity": "info"
+  },
+  {
+    "id": "diag-0013",
+    "query_id": "q07_null_status",
+    "rule_id": "HIGH_CARDINALITY_OVERPARTITION",
+    "severity": "info"
+  }
+]

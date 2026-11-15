@@ -323,6 +323,7 @@ diagnostics:
 | `files` | 文件裁剪结果 |
 | `metrics` | 指标 |
 | `or_branches` | 顶层 OR 分支分析；非顶层 OR 时为 `null` |
+| `degraded_path_rewrite` | 退化路径改写建议块；未同时命中 `FUNCTION_WRAPPED_PARTITION` 与 `UNKNOWN_PREDICATE_CONSERVATIVE` 时为 `null` |
 | `diagnostic_ids` / `diagnostic_count` | 该查询关联的诊断 |
 
 `partition` 字段：
@@ -363,6 +364,8 @@ diagnostics:
 - `scan_amplification`
 
 `or_branches` 非空时包含：`branch_count`、`branches[]`（index、scanned_files/bytes/rows、expression AST）、`union_scanned_files`、`union_scanned_bytes`、`expansion_factor`。
+
+`degraded_path_rewrite` 非空时包含：`trigger_rules`（固定两条规则 ID）、`table_bytes`、`current_scanned_bytes` 和 `suggestions[]`。每条建议给出 `column`、`function`、`fragment`（原谓词片段，含 NOT 链）、`rewrite`（基于实际分区取值域推导的裸比较）、`rewritten_where`（替换后的完整 WHERE）、`match`（`all`/`none`/`value`/`range`/`set`）、`matched_partition_values`、`domain_size`、`selected_partitions`/`total_partitions`、`scanned_bytes_upper_bound`（保守上界：选中分区的全部字节）和 `scan_byte_ratio`。推导规则与语义保证见 [DIAGNOSTICS.md](DIAGNOSTICS.md) 第 8 节末尾。
 
 ### 5.4 `diagnostics[]`
 
@@ -426,6 +429,7 @@ diagnostics:
       "partition_prune_ratio": 0.5,
       "stats_prune_ratio": 0.666667,
       "selected_partitions": 2,
+      "degraded_path_rewrite": null,
       "diagnostic_count": 0
     }
   ],

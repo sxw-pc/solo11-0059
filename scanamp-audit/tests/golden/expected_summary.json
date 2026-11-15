@@ -93,6 +93,7 @@
   },
   "queries": [
     {
+      "degraded_path_rewrite": null,
       "diagnostic_count": 0,
       "estimated_matched_bytes": 75,
       "estimated_matched_rows": 96,
@@ -107,6 +108,7 @@
       "where": "dt BETWEEN '2024-01-01' AND '2024-01-02' AND region = 'alpha' AND amount > 1000"
     },
     {
+      "degraded_path_rewrite": null,
       "diagnostic_count": 2,
       "estimated_matched_bytes": 124,
       "estimated_matched_rows": 135,
@@ -121,6 +123,34 @@
       "where": "event_type = 'click'"
     },
     {
+      "degraded_path_rewrite": {
+        "current_scanned_bytes": 497,
+        "suggestions": [
+          {
+            "column": "dt",
+            "domain_size": 3,
+            "fragment": "substr(dt, 1, 7) = '2024-01'",
+            "function": "substr",
+            "match": "all",
+            "matched_partition_values": [
+              "2024-01-01",
+              "2024-01-02",
+              "2024-01-03"
+            ],
+            "rewrite": "1 = 1",
+            "rewritten_where": "1 = 1",
+            "scan_byte_ratio": 1.0,
+            "scanned_bytes_upper_bound": 497,
+            "selected_partitions": 5,
+            "total_partitions": 5
+          }
+        ],
+        "table_bytes": 497,
+        "trigger_rules": [
+          "FUNCTION_WRAPPED_PARTITION",
+          "UNKNOWN_PREDICATE_CONSERVATIVE"
+        ]
+      },
       "diagnostic_count": 3,
       "estimated_matched_bytes": 249,
       "estimated_matched_rows": 285,
@@ -135,6 +165,7 @@
       "where": "substr(dt, 1, 7) = '2024-01'"
     },
     {
+      "degraded_path_rewrite": null,
       "diagnostic_count": 1,
       "estimated_matched_bytes": 97,
       "estimated_matched_rows": 94,
@@ -149,6 +180,7 @@
       "where": "(dt = '2024-01-01' AND region = 'alpha' AND amount > 4000) OR (dt = '2024-01-03' AND amount < 1000)"
     },
     {
+      "degraded_path_rewrite": null,
       "diagnostic_count": 2,
       "estimated_matched_bytes": 127,
       "estimated_matched_rows": 145,
@@ -163,6 +195,7 @@
       "where": "region = 'alpha' AND user_id = 42"
     },
     {
+      "degraded_path_rewrite": null,
       "diagnostic_count": 1,
       "estimated_matched_bytes": 497,
       "estimated_matched_rows": 570,
@@ -177,6 +210,7 @@
       "where": "dt >= '2024-01-01'"
     },
     {
+      "degraded_path_rewrite": null,
       "diagnostic_count": 2,
       "estimated_matched_bytes": 4,
       "estimated_matched_rows": 4,
@@ -191,6 +225,7 @@
       "where": "status IS NULL"
     },
     {
+      "degraded_path_rewrite": null,
       "diagnostic_count": 1,
       "estimated_matched_bytes": 107,
       "estimated_matched_rows": 127,

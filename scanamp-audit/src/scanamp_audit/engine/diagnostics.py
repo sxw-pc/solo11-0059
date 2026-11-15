@@ -100,14 +100,19 @@ def _unknown_conservative(q: dict[str, Any], table: TableManifest, config: Audit
     partition = q["partition"]
     if not (partition["all_selected"] and partition["undecidable_reasons"]):
         return None
+    evidence: dict[str, Any] = {
+        "reasons": partition["undecidable_reasons"],
+        "selected_partitions": partition["selected_count"],
+        "total_partitions": partition["partition_count"], "where": q["where"],
+    }
+    if q.get("degraded_path_rewrite"):
+        evidence["degraded_path_rewrite"] = q["degraded_path_rewrite"]
     return _make(
         "UNKNOWN_PREDICATE_CONSERVATIVE", config,
         "An undecidable partition predicate forces all partitions to be scanned.",
         "Replace function-wrapped or non-literal partition predicates with static comparisons.",
         q["id"],
-        {"reasons": partition["undecidable_reasons"],
-         "selected_partitions": partition["selected_count"],
-         "total_partitions": partition["partition_count"], "where": q["where"]},
+        evidence,
     )
 def _path_mismatches(table: TableManifest, config: AuditConfig) -> list[Diagnostic]:
     return [

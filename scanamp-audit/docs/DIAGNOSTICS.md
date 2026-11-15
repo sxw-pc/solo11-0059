@@ -76,7 +76,7 @@
   - `functions`：`[{"column": "dt", "function": "substr"}]`。
   - `where`：原始谓词。
   - `partition_columns`：表的分区列。
-- **含义**：函数调用不能转换为分区值上的静态比较，分区裁剪无法确定，所有分区保守保留；同时会产生 `UNKNOWN_PREDICATE_CONSERVATIVE`。
+- **含义**：函数调用不能转换为分区值上的静态比较，分区裁剪无法确定，所有分区保守保留；同时会产生 `UNKNOWN_PREDICATE_CONSERVATIVE`，并在两条规则同时命中时附带 `degraded_path_rewrite` 改写建议块（见第 8 节末尾）。
 - **建议**：把函数从分区列上移走，直接比较裸分区列；或者把派生值物化为可过滤列/分区值。
 - **demo**：`q03_function_dt`。
 
@@ -138,9 +138,44 @@
   - `reasons`：不可判定原因列表。
   - `selected_partitions` / `total_partitions`。
   - `where`：原始谓词。
+  - `degraded_path_rewrite`：仅当查询同时命中 `FUNCTION_WRAPPED_PARTITION` 时附带的聚合改写建议块（见下节）。
 - **含义**：由于静态无法判定，工具选择保守保留所有分区。这不是误报的“最坏情况猜测”，而是安全侧的正确行为；但会掩盖真实的扫描放大。
 - **建议**：把不可判定谓词改写为分区列上的裸比较，或为派生值建立可静态过滤的列/分区。
 - **demo**：`q03_function_dt`。
+
+## 退化路径改写建议块（`degraded_path_rewrite`）
+
+当同一条查询同时命中 `FUNCTION_WRAPPED_PARTITION` 与 `UNKNOWN_PREDICATE_CONSERVATIVE` 时，引擎在查询结果上聚合一个 `degraded_path_rewrite` 建议块，并随本规则诊断的 `evidence` 输出；report.json 的 `queries[]` 和 summary 的查询条目中都可见（未同时命中时为 `null`）。是否生成该块只取决于谓词分析与分区裁剪结果，与两条规则在配置中是否启用无关。
+
+### 块结构
+
+- `trigger_rules`：固定为 `["FUNCTION_WRAPPED_PARTITION", "UNKNOWN_PREDICATE_CONSERVATIVE"]`。
+- `table_bytes`：全表字节数。
+- `current_scanned_bytes`：原查询当前扫描字节，作为对比基线。
+- `suggestions`：建议列表，按 `(column, function, fragment)` 排序，顺序稳定。
+
+### 每条建议
+
+- `column` / `function`：被包裹的分区列与最外层函数名。
+- `fragment`：原谓词片段，包含片段正上方的 `NOT` 链。
+- `rewrite`：基于该表实际分区取值域推导出的裸比较写法：
+  - 域内全部命中 → `1 = 1`（`match: "all"`，改写无法裁剪）；
+  - 域内无命中 → `1 = 0`（`match: "none"`）；
+  - 恰好一个值 → `dt = '...'`（`match: "value"`）；
+  - 域内连续区间 → `dt BETWEEN ... AND ...`（`match: "range"`）；
+  - 其他 → `dt IN (...)`（`match: "set"`）。
+- `rewritten_where`：把该片段替换为裸比较后的完整 WHERE 文本，保留原谓词其余的 AND/OR/NOT 结构。
+- `matched_partition_values` / `domain_size`：域内实际命中的分区值列表与域大小。
+- `selected_partitions` / `total_partitions`：改写后的谓词在全表上选中的分区数。
+- `scanned_bytes_upper_bound`：改写后扫描字节的保守上界，即选中分区的全部字节（不再做文件级裁剪）。
+- `scan_byte_ratio`：上界占全表字节的比例。
+
+### 语义保证
+
+- 改写是把原片段（含 `NOT` 链）对分区列真实取值域逐值求值后推导的：`NOT substr(dt, 1, 4) = '2024'` 不会机械剥成 `dt != '2024'`；若域内所有值都以 `2024` 开头，原谓词语义是“永不命中”，改写为 `1 = 0`，上界为 0。
+- 替换片段与原片段在域内逐值等价，因此在任意 AND/OR/NOT 上下文中都保持整个谓词的语义。
+- 上界始终保守：即使改写不能真正裁剪（`match: "all"`），上界也等于全表字节，不会小于原查询当前扫描字节。
+- 支持静态求值的函数：`substr`（1 基，可省略长度）、`lower`、`upper`。其他函数、引用多个列或无法静态求值的片段不产生建议；全部片段都不可求值时 `suggestions` 为空列表。
 
 ## 规则与 demo 对照
 

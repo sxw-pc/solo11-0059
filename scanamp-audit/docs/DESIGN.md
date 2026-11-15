@@ -37,6 +37,7 @@
 | 引擎 | `engine/file_pruner.py` | 用 sidecar 统计裁剪文件，输出扫描/丢弃/未知和估计命中 |
 | 引擎 | `engine/metrics.py` | 裁剪比例、扫描字节、放大倍数、OR 分支扩张 |
 | 引擎 | `engine/diagnostics.py` | 8 条可配置诊断规则 |
+| 引擎 | `engine/rewrite.py` | 退化路径改写建议块：按分区取值域推导裸比较和保守扫描上界 |
 | 引擎 | `engine/auditor.py` | 编排查询结果、summary、诊断 ID、输入指纹 |
 | 报告 | `report/format.py` | 格式化、Markdown/HTML 转义、JSON 稳定输出 |
 | 报告 | `report/*_report.py` | JSON、Markdown、自包含 HTML |
@@ -193,6 +194,8 @@ AND 为子选择率乘积；OR 使用 `1 - ∏(1 - s_i)`，并钳制到 `[0, 1]`
 ### 3.8 诊断与 summary
 
 `engine/diagnostics.py` 在查询被裁剪和计量之后运行。每个规则读取配置的 `enabled`、`severity` 和阈值；未启用则完全跳过。诊断对象先按严重级别、规则 ID、查询 ID、证据 JSON 排序，然后按 `diag-0001` 顺序编号，保证相同输入得到相同 ID。
+
+`engine/rewrite.py` 在查询同时命中 `FUNCTION_WRAPPED_PARTITION` 与 `UNKNOWN_PREDICATE_CONSERVATIVE` 的触发条件时生成 `degraded_path_rewrite` 建议块：把函数包裹的谓词片段（含正上方 `NOT` 链）对该分区列的真实取值域逐值求值，推导出域内等价的裸比较（`1 = 0` / `1 = 1` / `=` / `BETWEEN` / `IN`），并用改写后的谓词在全表上重跑分区裁剪，把选中分区的全部字节作为保守扫描上界——不做文件级裁剪，因此不能真正裁剪时上界保持全表字节，不会小于原查询扫描量。建议块挂在查询结果上，随 summary 查询条目和 `UNKNOWN_PREDICATE_CONSERVATIVE` 的 evidence 输出，建议按 `(column, function, fragment)` 排序，与规则是否启用无关。
 
 `auditor` 生成：
 

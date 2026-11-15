@@ -70,7 +70,7 @@ run_id=demo-run report_dir=var/demo-run queries=8 diagnostics=13 critical=2 warn
 
 当前 fixture 下的关键证据：
 
-- `q03_function_dt` 使用 `substr(dt, 1, 7)`，分区列被函数包裹，触发 `FUNCTION_WRAPPED_PARTITION`（critical）和保守扫描诊断。
+- `q03_function_dt` 使用 `substr(dt, 1, 7)`，分区列被函数包裹，触发 `FUNCTION_WRAPPED_PARTITION`（critical）和保守扫描诊断；查询结果、summary 查询条目和 `UNKNOWN_PREDICATE_CONSERVATIVE` 的 evidence 中附带 `degraded_path_rewrite` 改写建议块（本例域内分区全部命中，保守上界为全表 497 字节）。
 - `q05_missing_user_stats` 的 `user_id` 在 alpha 分区文件上没有统计，统计裁剪失效并触发 `STATS_MISSING`。
 - `q04_or_branches` 的两个 OR 分支落在不同分区，合并后扫描集合大于任一分区，触发 `OR_BRANCH_BLOWUP`。
 - `dt=2024-01-01/region=beta/part-0001.csv` 的 manifest 分区值是 `delta`，与路径推断值不一致，触发 `PATH_MANIFEST_MISMATCH`（critical）。
@@ -165,6 +165,8 @@ SQLite ledger 保存：
 | `UNKNOWN_PREDICATE_CONSERVATIVE` | warning | 不可判定谓词导致所有分区被保留 |
 
 每条规则都可以在配置中单独关闭、调整 severity，并按文档设置阈值。详细触发条件、证据字段和修复建议见 [docs/DIAGNOSTICS.md](docs/DIAGNOSTICS.md)。
+
+当一条查询同时命中 `FUNCTION_WRAPPED_PARTITION` 与 `UNKNOWN_PREDICATE_CONSERVATIVE` 时，查询结果会附带 `degraded_path_rewrite` 聚合建议块：按表的实际分区取值域，把函数包裹的谓词片段（含 `NOT` 链）推导为等价的裸比较写法，并给出改写后扫描字节的保守上界（不能真正裁剪时上界保持为全表字节，不会小于原查询扫描量）。建议块在 report.json 的 `queries[]`、summary 的查询条目和 `UNKNOWN_PREDICATE_CONSERVATIVE` 诊断的 evidence 中可见，顺序稳定。
 
 ## 核心语义
 

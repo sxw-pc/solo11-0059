@@ -10,6 +10,7 @@ from .diagnostics import evaluate_diagnostics
 from .file_pruner import prune_files
 from .metrics import compute_metrics, compute_or_branches
 from .partition_pruner import prune_partitions
+from .rewrite import build_degraded_path_rewrite
 
 SCHEMA_VERSION = "1.0"
 def utc_now() -> str:
@@ -31,6 +32,9 @@ def _query_result(
     metrics = compute_metrics(table, partition, file_result)
     branches = compute_or_branches(query.predicate, table, config.default_selectivity,
                                    analysis["columns"])
+    rewrite = build_degraded_path_rewrite(
+        table, query.predicate, analysis, partition, metrics["scanned_bytes"]
+    )
     return {
         "id": query.id,
         "description": query.description,
@@ -43,6 +47,7 @@ def _query_result(
         "files": file_result,
         "metrics": metrics,
         "or_branches": branches,
+        "degraded_path_rewrite": rewrite,
         "diagnostic_ids": [],
         "diagnostic_count": 0,
     }
@@ -65,6 +70,7 @@ def _summary(query_results: list[dict[str, Any]], table: TableManifest,
             "partition_prune_ratio": item["metrics"]["partition_prune_ratio"],
             "stats_prune_ratio": item["metrics"]["stats_prune_ratio"],
             "selected_partitions": item["partition"]["selected_count"],
+            "degraded_path_rewrite": item["degraded_path_rewrite"],
             "diagnostic_count": item["diagnostic_count"],
         }
         for item in query_results

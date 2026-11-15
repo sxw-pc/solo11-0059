@@ -115,17 +115,24 @@
 - **默认阈值**：
   - `min_branches: 2`
   - `min_expansion_factor: 1.5`
+- **覆盖集合**：每个分支的候选覆盖集合按文件身份（`partition_id` + `path`）构造，语义与 `prune_files` 的 keep/drop/unknown 一致：`keep` 与 `unknown` 都算覆盖，只有 `drop` 不覆盖。被两个及以上分支覆盖的文件是共享文件，只被一个分支覆盖的是独占文件。
 - **触发条件**：谓词顶层节点为 `or`，分支数至少达到 `min_branches`，且：
-  - `expansion_factor = union_scanned_files / max(branch_scanned_files) >= min_expansion_factor`。
+  - `expansion_factor = union_scanned_files / max(branch_scanned_files) >= min_expansion_factor`；
+  - `expansion_delta = union_files - max(branch_files) >= 1`，即并集确实比最大单分支多扫文件。等价覆盖（各分支在同一批文件上都 UNKNOWN，并集与单分支相同）即使把阈值调到 `1.0` 也不会触发。
 - **证据**：
   - `branch_count`：顶层 OR 分支数。
   - `branch_scanned_files`：各分支扫描文件数列表。
   - `union_scanned_files`：并集扫描文件数。
   - `expansion_factor`：扩张因子。
-- **含义**：每个分支单独看可能选择性不错，但 OR 的并集覆盖了更多文件；如果各分支落在不同分区或不同文件集合，扫描放大会被 OR 放大。
-- **建议**：按分支拆分查询并分别读取；如果多个分支共享同一过滤键，考虑改写为并集过滤或物理布局优化。
-- **注意**：分支指标基于全部表文件计算，而查询级指标基于分区裁剪后的候选文件；两处口径在报告中分别呈现，不能直接相除解释。
-- **demo**：`q04_or_branches`：两个分支选择不同分区，扩张因子约 `2.0`。
+  - `expansion_delta`：并集相对最大单分支多扫的文件数。
+  - `shared_files` / `exclusive_files`：并集中被多分支共享 / 仅被单分支覆盖的文件数。
+  - `shared_contribution` / `exclusive_contribution`：`expansion_delta` 的分解——最大分支漏掉的文件中，仍被多分支共享的数量与仅被单分支独占的数量，两者之和等于 `expansion_delta`。
+  - `dominant_cause`：膨胀归因。`exclusive` 表示膨胀主要来自独占文件（拆分支有收益）；`shared` 表示主要来自共享文件（拆分支会重复扫描共享文件，降不了成本）。
+  - `stats_missing_branches`：覆盖集合完全由 UNKNOWN 决策构成的分支下标（典型原因是统计缺失）。
+- **含义**：每个分支单独看可能选择性不错，但 OR 的并集覆盖了更多文件。归因区分两种情形：各分支落在不同文件上（`exclusive`，拆开跑更划算），或多个分支共享同一批文件（`shared`，拆分支无法降成本）。当并集与最大分支相同、且最大分支全靠 UNKNOWN 保留文件时，扩张为 1.0，归因为统计缺失而不是 OR 拆分收益，不触发本规则。
+- **建议**：`exclusive` 时按分支拆分查询并分别读取，或改写为并集过滤；`shared` 时拆分支会重复扫描共享文件，应改写为并集过滤或调整布局消除分支重叠。
+- **注意**：分支指标基于全部表文件计算，而查询级指标基于分区裁剪后的候选文件；两处口径在报告中分别呈现，不能直接相除解释。每条 OR 查询的完整归因同时出现在 summary 的 `or_attribution` 中（按 `expansion_delta` 降序、查询 id 稳定排序），包括未触发诊断的查询。
+- **demo**：`q04_or_branches`：两个分支选择不同分区，扩张因子约 `2.0`，膨胀全部来自独占文件。
 
 ## 8. `UNKNOWN_PREDICATE_CONSERVATIVE`
 
@@ -152,7 +159,7 @@
 | `FUNCTION_WRAPPED_PARTITION` | `q03_function_dt` | `substr(dt)` |
 | `STATS_MISSING` | `q05`、`q08` | `user_id` 无统计 |
 | `PATH_MANIFEST_MISMATCH` | 表级 | path `beta` vs declared `delta` |
-| `OR_BRANCH_BLOWUP` | `q04_or_branches` | 并集文件数 / 最大分支 |
+| `OR_BRANCH_BLOWUP` | `q04_or_branches` | 并集相对最大分支的膨胀按共享/独占归因 |
 | `UNKNOWN_PREDICATE_CONSERVATIVE` | `q03_function_dt` | 全分区保留 + 不可判定原因 |
 
 ## 配置示例

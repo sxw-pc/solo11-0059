@@ -26,9 +26,13 @@ def _query_section(query: dict[str, Any]) -> list[str]:
     ]
     if query["or_branches"]:
         info = query["or_branches"]
+        attribution = info["attribution"]
         lines.append(
             f"- OR branches: {info['branch_count']}, expansion factor "
-            f"{md_escape(info['expansion_factor'])}"
+            f"{md_escape(info['expansion_factor'])}, growth attributed to "
+            f"{md_escape(attribution['dominant_cause'])} coverage "
+            f"(shared {attribution['shared_contribution']}, "
+            f"exclusive {attribution['exclusive_contribution']})"
         )
         lines.append("")
     lines.append("Partition decisions:")

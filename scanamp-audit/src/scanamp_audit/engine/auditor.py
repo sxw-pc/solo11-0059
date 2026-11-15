@@ -46,6 +46,33 @@ def _query_result(
         "diagnostic_ids": [],
         "diagnostic_count": 0,
     }
+def _or_attribution(query_results: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Per-OR-query coverage attribution, ordered by expansion delta then id."""
+    entries = []
+    for item in query_results:
+        info = item["or_branches"]
+        if not info:
+            continue
+        attribution = info["attribution"]
+        entries.append(
+            {
+                "id": item["id"],
+                "branch_count": info["branch_count"],
+                "union_files": attribution["union_files"],
+                "largest_branch_index": attribution["largest_branch_index"],
+                "largest_branch_files": attribution["largest_branch_files"],
+                "expansion_factor": info["expansion_factor"],
+                "expansion_delta": attribution["expansion_delta"],
+                "shared_files": attribution["shared_files"],
+                "exclusive_files": attribution["exclusive_files"],
+                "shared_contribution": attribution["shared_contribution"],
+                "exclusive_contribution": attribution["exclusive_contribution"],
+                "dominant_cause": attribution["dominant_cause"],
+                "stats_missing_branches": attribution["stats_missing_branches"],
+            }
+        )
+    entries.sort(key=lambda entry: (-entry["expansion_delta"], entry["id"]))
+    return entries
 def _summary(query_results: list[dict[str, Any]], table: TableManifest,
              diagnostics: list[dict[str, Any]], config: AuditConfig,
              run_id: str, fingerprints: dict[str, str]) -> dict[str, Any]:
@@ -104,6 +131,7 @@ def _summary(query_results: list[dict[str, Any]], table: TableManifest,
         },
         "queries": queries,
         "ranking": ranking,
+        "or_attribution": _or_attribution(query_results),
         "diagnostics": [
             {"id": item["id"], "rule_id": item["rule_id"],
              "severity": item["severity"], "query_id": item["query_id"]}

@@ -362,7 +362,9 @@ diagnostics:
 - `scan_byte_ratio`
 - `scan_amplification`
 
-`or_branches` 非空时包含：`branch_count`、`branches[]`（index、scanned_files/bytes/rows、expression AST）、`union_scanned_files`、`union_scanned_bytes`、`expansion_factor`。
+`or_branches` 非空时包含：`branch_count`、`branches[]`（index、scanned_files/bytes/rows、keep_files、unknown_files、exclusive_files、shared_files、all_unknown、expression AST）、`union_scanned_files`、`union_scanned_bytes`、`expansion_factor`、`attribution`。
+
+`attribution` 是 OR 分支交叉归因：以文件身份（`partition_id` + `path`）构造每个分支的候选覆盖集合（`keep`/`unknown` 覆盖、`drop` 不覆盖），包含 `union_files`、`largest_branch_index`、`largest_branch_files`、`expansion_delta`（并集相对最大分支多扫的文件数）、`shared_files`/`exclusive_files`（被多分支共享 / 仅被单分支覆盖的并集文件数）、`shared_contribution`/`exclusive_contribution`（`expansion_delta` 的共享/独占分解，两者之和等于 `expansion_delta`）、`dominant_cause`（`none`/`stats_missing`/`shared`/`exclusive`）、`stats_missing_branches`（覆盖完全由 UNKNOWN 决策构成的分支下标）以及逐分支的 `branches[]` 覆盖计数。
 
 ### 5.4 `diagnostics[]`
 
@@ -430,11 +432,30 @@ diagnostics:
     }
   ],
   "ranking": [{"id": "q07", "scan_amplification": 64.75}],
+  "or_attribution": [
+    {
+      "id": "q04",
+      "branch_count": 2,
+      "union_files": 2,
+      "largest_branch_index": 0,
+      "largest_branch_files": 1,
+      "expansion_factor": 2.0,
+      "expansion_delta": 1,
+      "shared_files": 0,
+      "exclusive_files": 2,
+      "shared_contribution": 0,
+      "exclusive_contribution": 1,
+      "dominant_cause": "exclusive",
+      "stats_missing_branches": []
+    }
+  ],
   "diagnostics": [
     {"id": "diag-0001", "rule_id": "...", "severity": "critical", "query_id": "..."}
   ]
 }
 ```
+
+`or_attribution` 覆盖每条顶层 OR 查询（无论是否触发 `OR_BRANCH_BLOWUP`），按 `expansion_delta` 降序、查询 id 升序稳定排序；没有 OR 查询时为空列表。字段含义与查询级 `or_branches.attribution` 相同。
 
 `scanned_files` 在 summary 的查询级是文件数；顶层 `scan.scanned_files` 是各查询文件数之和（文件次，不是去重文件数），用于表达整个 workload 的累计扫描量。
 

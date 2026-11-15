@@ -14,7 +14,7 @@
 
 - 静态审计本地表目录的文件清单、分区路径、分区值和 sidecar 列统计。
 - 解析查询谓词，做分区级候选裁剪和文件级统计裁剪。
-- 计算扫描放大、裁剪比例、OR 分支扩张等指标。
+- 计算扫描放大、裁剪比例、OR 分支扩张等指标，并按文件覆盖把 OR 膨胀归因到共享/独占。
 - 生成确定性 JSON / Markdown / 自包含 HTML 报告和 SQLite 运行台账。
 - 用离线 fixture、golden summary 和 pytest 回归证明结果可复现。
 
@@ -72,7 +72,7 @@ run_id=demo-run report_dir=var/demo-run queries=8 diagnostics=13 critical=2 warn
 
 - `q03_function_dt` 使用 `substr(dt, 1, 7)`，分区列被函数包裹，触发 `FUNCTION_WRAPPED_PARTITION`（critical）和保守扫描诊断。
 - `q05_missing_user_stats` 的 `user_id` 在 alpha 分区文件上没有统计，统计裁剪失效并触发 `STATS_MISSING`。
-- `q04_or_branches` 的两个 OR 分支落在不同分区，合并后扫描集合大于任一分区，触发 `OR_BRANCH_BLOWUP`。
+- `q04_or_branches` 的两个 OR 分支落在不同分区，合并后扫描集合大于任一分区，膨胀归因全部为独占文件，触发 `OR_BRANCH_BLOWUP`。
 - `dt=2024-01-01/region=beta/part-0001.csv` 的 manifest 分区值是 `delta`，与路径推断值不一致，触发 `PATH_MANIFEST_MISMATCH`（critical）。
 - `q07_null_status` 只过滤数据列，没有任何分区过滤，放大倍数为 `64.75`，同时触发 `PARTITION_KEY_UNFILTERED`。
 - 汇总扫描放大为 `1.851562`，扫描 28 个文件次 / 2370 字节，估计命中 1280 字节。
@@ -161,7 +161,7 @@ SQLite ledger 保存：
 | `FUNCTION_WRAPPED_PARTITION` | critical | 分区列被函数包裹，无法静态裁剪 |
 | `STATS_MISSING` | warning | 过滤列缺少可用 min/max 统计，文件只能保守保留 |
 | `PATH_MANIFEST_MISMATCH` | critical | 路径推断的分区值与 manifest 声明不一致 |
-| `OR_BRANCH_BLOWUP` | warning | OR 分支并集明显大于最大单分支扫描集合 |
+| `OR_BRANCH_BLOWUP` | warning | OR 分支并集明显大于最大单分支扫描集合，且膨胀可归属到共享或独占文件 |
 | `UNKNOWN_PREDICATE_CONSERVATIVE` | warning | 不可判定谓词导致所有分区被保留 |
 
 每条规则都可以在配置中单独关闭、调整 severity，并按文档设置阈值。详细触发条件、证据字段和修复建议见 [docs/DIAGNOSTICS.md](docs/DIAGNOSTICS.md)。

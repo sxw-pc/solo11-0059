@@ -108,9 +108,13 @@ def render_html(result: AuditResult) -> str:
         ])
         if query["or_branches"]:
             info = query["or_branches"]
+            attribution = info["attribution"]
             parts.append(
                 "<p>OR branches: " + html_escape(info["branch_count"]) + ", expansion factor "
-                + html_escape(info["expansion_factor"]) + "</p>"
+                + html_escape(info["expansion_factor"]) + ", growth attributed to "
+                + html_escape(attribution["dominant_cause"]) + " coverage (shared "
+                + html_escape(attribution["shared_contribution"]) + ", exclusive "
+                + html_escape(attribution["exclusive_contribution"]) + ")</p>"
             )
         parts.append("<h4>Partition decisions</h4>")
         parts.append(_table(["Partition", "Decision", "Reason"],

@@ -91,6 +91,23 @@
     "manifest": "4a854e74c38671a9a3e5f875e942e39054c805450411792ba821a57a0cecfd74",
     "workload": "1222003d8892fbc4ab1b5bc6d01080e803a34e475b80c7a2ef63f42595d385e4"
   },
+  "or_attribution": [
+    {
+      "branch_count": 2,
+      "dominant_cause": "exclusive",
+      "exclusive_contribution": 1,
+      "exclusive_files": 2,
+      "expansion_delta": 1,
+      "expansion_factor": 2.0,
+      "id": "q04_or_branches",
+      "largest_branch_files": 1,
+      "largest_branch_index": 0,
+      "shared_contribution": 0,
+      "shared_files": 0,
+      "stats_missing_branches": [],
+      "union_files": 2
+    }
+  ],
   "queries": [
     {
       "diagnostic_count": 0,

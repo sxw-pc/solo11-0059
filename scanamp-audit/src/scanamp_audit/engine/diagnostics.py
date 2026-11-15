@@ -80,22 +80,47 @@ def _stats_missing(q: dict[str, Any], table: TableManifest, config: AuditConfig)
              "scanned_files": files["scanned_files"]},
         )
     return None
+_OR_BLOWUP_MESSAGES = {
+    "exclusive": (
+        "OR branches expand the candidate set beyond the largest single branch, "
+        "and the growth comes from files covered by exactly one branch.",
+        "Consider splitting the query into per-branch reads or rewriting the OR as a union of filters.",
+    ),
+    "shared": (
+        "OR branches expand the candidate set beyond the largest single branch, "
+        "but the growth comes from files shared by multiple branches.",
+        "Splitting into per-branch reads would rescan the shared files; rewrite the OR as a "
+        "union of filters or adjust the layout so branches stop overlapping.",
+    ),
+}
 def _or_blowup(q: dict[str, Any], table: TableManifest, config: AuditConfig):
     cfg = config.rule("OR_BRANCH_BLOWUP")
     info = q["or_branches"]
-    if (info and info["branch_count"] >= cfg.thresholds["min_branches"]
-            and info["expansion_factor"] >= cfg.thresholds["min_expansion_factor"]):
-        return _make(
-            "OR_BRANCH_BLOWUP", config,
-            "OR branches expand the candidate set well beyond the largest single branch.",
-            "Consider splitting the query into per-branch reads or rewriting the OR as a union of filters.",
-            q["id"],
-            {"branch_count": info["branch_count"],
-             "branch_scanned_files": [item["scanned_files"] for item in info["branches"]],
-             "union_scanned_files": info["union_scanned_files"],
-             "expansion_factor": info["expansion_factor"]},
-        )
-    return None
+    if not info:
+        return None
+    attribution = info["attribution"]
+    # expansion_delta >= 1 keeps equivalent coverage (union == largest branch,
+    # e.g. branches that are all UNKNOWN on the same files) from being flagged
+    # as blowup even when min_expansion_factor is lowered to 1.0.
+    if not (info["branch_count"] >= cfg.thresholds["min_branches"]
+            and info["expansion_factor"] >= cfg.thresholds["min_expansion_factor"]
+            and attribution["expansion_delta"] >= 1):
+        return None
+    message, suggestion = _OR_BLOWUP_MESSAGES[attribution["dominant_cause"]]
+    return _make(
+        "OR_BRANCH_BLOWUP", config, message, suggestion, q["id"],
+        {"branch_count": info["branch_count"],
+         "branch_scanned_files": [item["scanned_files"] for item in info["branches"]],
+         "union_scanned_files": info["union_scanned_files"],
+         "expansion_factor": info["expansion_factor"],
+         "expansion_delta": attribution["expansion_delta"],
+         "shared_files": attribution["shared_files"],
+         "exclusive_files": attribution["exclusive_files"],
+         "shared_contribution": attribution["shared_contribution"],
+         "exclusive_contribution": attribution["exclusive_contribution"],
+         "dominant_cause": attribution["dominant_cause"],
+         "stats_missing_branches": attribution["stats_missing_branches"]},
+    )
 def _unknown_conservative(q: dict[str, Any], table: TableManifest, config: AuditConfig):
     partition = q["partition"]
     if not (partition["all_selected"] and partition["undecidable_reasons"]):

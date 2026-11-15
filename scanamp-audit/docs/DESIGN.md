@@ -211,7 +211,7 @@ AND 为子选择率乘积；OR 使用 `1 - ∏(1 - s_i)`，并钳制到 `[0, 1]`
 3. `report.html`：内联 CSS、CSP meta、转义动态文本，无外部链接。
 4. `summary.json`：去掉运行时字段的确定性摘要。
 
-ledger 在一个事务中先删除相同 `run_id` 的子记录和主记录，再插入新记录；`runs.run_id` 为主键，子表使用外键并启用 `PRAGMA foreign_keys = ON`。因此同一个 run id 重跑不会产生重复数据。
+ledger 在一个事务中先删除相同 `run_id` 的子记录和主记录，再插入新记录；`runs.run_id` 为主键，子表使用外键并启用 `PRAGMA foreign_keys = ON`。因此同一个 run id 重跑不会产生重复数据。删除之前，`versions.archive_current` 会把被替换版本的逐查询裁剪明细（逐分区、逐文件 decision 与指标）归档为 `run_versions` 中的不可变快照：版本号按 run 单调递增，并记录写入时间；该表故意不设外键，快照不随 run 行替换而级联删除。`versions.py` 提供只读读模型：`list_versions` 列出版本历史，`get_version` 按版本号或别名（`current`/`latest`/`previous`）读取某一版本，`diff_versions` 仅从台账重建两版差异——逐查询的分区集合增减、扫描文件/字节变化、逐文件 decision 变化，以及仅估计值变化而裁剪决策未变的查询；输出确定性排序。
 
 ## 4. 确定性策略
 
@@ -260,11 +260,12 @@ ledger 在一个事务中先删除相同 `run_id` 的子记录和主记录，再
 - `test_loader_security.py`：路径穿越、绝对路径、尺寸/分区/统计错误。
 - `test_report_render.py`：转义、自包含、无外链。
 - `test_ledger.py`：幂等、替换、哈希、只读。
+- `test_ledger_versions.py`：快照保留与不可变、版本递增、差异重建（分区集合、扫描变化、仅估计值变化）、错误路径。
 - `test_cli_integration.py`：命令行、输出、gate。
 - `test_server_offline.py`：路由、只读、本地绑定、无非本地 host。
 - `test_golden.py`：summary/diagnostic golden 和确定性。
 
-代码规模按 `src` + `tests` 物理行统计：4404 行（源码 3722、测试 682），低于 4500 行上限；单文件最大 260 行，低于 300 行上限。为控制行数，模块内不强制保留函数之间的空行，但通过 docstring、分段顺序和独立模块维持可读性。
+代码规模按 `src` + `tests` 物理行统计：4922 行（源码 4023、测试 899）；版本快照与差异重建（`versions.py`）使总量超出最初的 4500 行上限。单文件最大 288 行，低于 300 行上限。为控制行数，模块内不强制保留函数之间的空行，但通过 docstring、分段顺序和独立模块维持可读性。
 
 ## 8. 扩展点
 

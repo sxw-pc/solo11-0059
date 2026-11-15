@@ -1,9 +1,16 @@
-"""SQLite run ledger with idempotent, per-run replacement semantics."""
+"""SQLite run ledger with idempotent, per-run replacement semantics.
+
+Overwriting an existing ``run_id`` first archives the replaced version's
+per-query pruning detail (per-partition and per-file decisions plus
+metrics) as an immutable, append-only row in ``run_versions``; see
+``versions.py`` for the snapshot and diff read model.
+"""
 from __future__ import annotations
 import json
 import sqlite3
 from pathlib import Path
 from typing import Any
+from . import versions
 from .errors import LedgerError
 from .models import AuditResult
 from .security import validate_ledger_path, validate_run_id
@@ -68,6 +75,18 @@ CREATE TABLE IF NOT EXISTS input_fingerprints (
   sha256 TEXT NOT NULL,
   PRIMARY KEY (run_id, kind)
 );
+-- Archived pre-overwrite versions.  Intentionally no foreign key to runs:
+-- snapshots must survive replacement of the live run row and are never
+-- updated or deleted (append-only, immutable evidence).
+CREATE TABLE IF NOT EXISTS run_versions (
+  run_id TEXT NOT NULL,
+  version INTEGER NOT NULL,
+  recorded_at TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  summary_json TEXT NOT NULL,
+  queries_json TEXT NOT NULL,
+  PRIMARY KEY (run_id, version)
+);
 """
 
 class Ledger:
@@ -131,6 +150,7 @@ class Ledger:
         )
         try:
             with self.connection:
+                versions.archive_current(self.connection, result.run_id)
                 for table in ("diagnostics", "queries", "artifacts", "input_fingerprints", "runs"):
                     self.connection.execute(f"DELETE FROM {table} WHERE run_id = ?", (result.run_id,))
                 self.connection.execute(
@@ -144,6 +164,8 @@ class Ledger:
                         "selected_partitions": query["partition"]["selected_count"],
                         "partition_count": query["partition"]["partition_count"],
                         "diagnostic_ids": query["diagnostic_ids"],
+                        "partition_decisions": query["partition"]["decisions"],
+                        "file_decisions": query["files"]["decisions"],
                     }
                     self.connection.execute(
                         "INSERT INTO queries VALUES (?,?,?,?,?,?,?,?,?,?,?)",
@@ -182,6 +204,20 @@ class Ledger:
             raise LedgerError("failed to write ledger rows", location=str(self.path),
                               field="ledger", reason="WRITE_ERROR",
                               details={"error": str(exc)}) from exc
+    def list_versions(self, run_id: str) -> list[dict[str, Any]]:
+        """Version history of a run: archived snapshots plus the live version."""
+        validate_run_id(run_id)
+        return versions.list_versions(self.connection, run_id)
+    def get_version(self, run_id: str, version: int | str = "current") -> dict[str, Any] | None:
+        """One version of a run's pruning detail; ``None`` if the run is unknown."""
+        validate_run_id(run_id)
+        return versions.get_version(self.connection, run_id, version)
+    def diff_versions(
+        self, run_id: str, old: int | str = "previous", new: int | str = "current"
+    ) -> dict[str, Any] | None:
+        """Pruning-decision diff between two versions, rebuilt from the ledger only."""
+        validate_run_id(run_id)
+        return versions.diff_versions(self.connection, run_id, old, new)
     def recent_runs(self, limit: int = 20) -> list[dict[str, Any]]:
         try:
             rows = self.connection.execute(

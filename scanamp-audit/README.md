@@ -144,12 +144,21 @@ python -m scanamp_audit golden --actual SUMMARY.json --expected GOLDEN.json
 SQLite ledger 保存：
 
 - `runs`：运行级汇总、扫描字节、放大倍数和 summary JSON。
-- `queries`：逐查询指标和裁剪详情。
+- `queries`：逐查询指标和裁剪详情（含逐分区、逐文件 decision）。
 - `diagnostics`：诊断消息、证据 JSON、建议和严重级别。
 - `artifacts`：四个报告产物的 SHA-256 与字节数。
 - `input_fingerprints`：manifest、workload、config 的指纹。
+- `run_versions`：覆盖写入前归档的不可变版本快照（逐查询裁剪明细、版本号、写入时间），只增不改。
 
-同一个 `run_id` 再次写入时会在一个事务内替换该 run 的所有子记录，保持幂等；不会生成重复 run。
+同一个 `run_id` 再次写入时，先在一个事务内把旧版本的逐查询裁剪明细归档为 `run_versions` 快照（版本号按 run 单调递增），再替换该 run 的所有子记录，保持幂等；不会生成重复 run。
+
+版本历史完全从台账重建，不依赖报告文件：
+
+- `Ledger.list_versions(run_id)`：列出版本历史（归档快照 + 当前 live 版本）。
+- `Ledger.get_version(run_id, version)`：读取某一版本的裁剪明细；`version` 支持版本号、`"current"`/`"latest"`（当前版本）和 `"previous"`（上一版快照）。
+- `Ledger.diff_versions(run_id, old, new)`：重建两版差异——逐查询的分区集合增减（`added_partitions`/`removed_partitions`）、扫描文件与扫描字节变化、逐文件 decision 变化，以及仅估计值变化而裁剪决策未变的查询（`estimate_only_queries`）；所有列表确定性排序。
+
+三个接口均为只读，可用 `Ledger(path, read_only=True)` 打开后调用。
 
 ## 诊断规则
 
@@ -197,12 +206,13 @@ SQLite ledger 保存：
 │   ├── schema.py                   # 类型、规范化、哈希
 │   ├── security.py                 # 路径、host、run-id 安全检查
 │   ├── workload.py                 # workload 加载和查询分析
-│   ├── ledger.py                   # SQLite 台账
+│   ├── ledger.py                   # SQLite 台账（幂等覆盖写入）
+│   ├── versions.py                 # 版本快照归档与差异重建（只读读模型）
 │   ├── server.py                   # 只读 Flask 页面
 │   ├── expr/                       # tokenizer / parser / validate / evaluator / stats
 │   ├── engine/                     # partition / file pruning / metrics / diagnostics / auditor
 │   └── report/                     # JSON / Markdown / HTML / renderer
-├── tests/                          # 82 个 pytest 用例 + golden
+├── tests/                          # 88 个 pytest 用例 + golden
 ├── tests/golden/                   # 确定性 summary / diagnostics golden
 └── var/                            # 运行输出与 ledger（git 忽略）
 ```
@@ -232,8 +242,8 @@ pytest -q
 
 按 `find src tests -name '*.py'` 统计（不含 fixture、golden 和生成报告）：
 
-- 源码 3722 行，测试 682 行，合计 4404 行，满足 2500–4500 行约束。
-- 单文件最大 260 行（`src/scanamp_audit/expr/evaluator.py`），满足单文件不超过 300 行约束。
+- 源码 4023 行，测试 899 行，合计 4922 行。版本快照与差异重建（`versions.py`）使总量超出最初的 2500–4500 行预算。
+- 单文件最大 288 行（`src/scanamp_audit/ledger.py`），满足单文件不超过 300 行约束。
 - 为满足行数预算，模块内采用紧凑的物理行风格；逻辑分层和文档仍保持独立。
 
 ## 已知限制

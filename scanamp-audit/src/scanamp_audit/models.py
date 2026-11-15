@@ -212,6 +212,7 @@ class AuditResult:
     diagnostics: list[dict[str, Any]]
     summary: dict[str, Any]
     inputs: dict[str, Any]
+    layout_evaluation: dict[str, Any] = field(default_factory=dict)
     def critical_count(self) -> int:
         return sum(1 for item in self.diagnostics if item["severity"] == "critical")
     def warning_count(self) -> int:

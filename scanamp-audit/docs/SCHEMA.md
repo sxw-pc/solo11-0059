@@ -432,11 +432,140 @@ diagnostics:
   "ranking": [{"id": "q07", "scan_amplification": 64.75}],
   "diagnostics": [
     {"id": "diag-0001", "rule_id": "...", "severity": "critical", "query_id": "..."}
-  ]
+  ],
+  "layout_evaluation": {
+    "schema_version": "1.0",
+    "table": {
+      "name": "demo_events",
+      "partition_columns": ["dt", "region"],
+      "partition_count": 5,
+      "file_count": 6,
+      "byte_size": 497,
+      "single_file_partition_count": 4,
+      "single_file_partition_ratio": 0.8
+    },
+    "columns": [
+      {
+        "column": "dt",
+        "type": "date",
+        "cardinality": 3,
+        "partition_count": 5,
+        "values": [
+          {"value": "2024-01-01", "partition_count": 2, "file_count": 3,
+           "byte_size": 255, "row_count": 300, "single_file": false}
+        ],
+        "file_count_distribution": {"count": 3, "min": 1, "max": 3,
+                                    "total": 6, "mean": 2.0, "median": 2.0},
+        "byte_size_distribution": {"count": 3, "min": 78, "max": 255,
+                                   "total": 497, "mean": 165.666667,
+                                   "median": 164.0},
+        "single_file_partition_count": 1,
+        "single_file_partition_ratio": 0.333333
+      }
+    ],
+    "layouts": [
+      {
+        "layout_id": "current",
+        "removed_columns": [],
+        "remaining_columns": ["dt", "region"],
+        "partition_count": 5,
+        "file_count": 6,
+        "byte_size": 497,
+        "single_file_partition_count": 4,
+        "single_file_partition_ratio": 0.8,
+        "merged_group_count": 0,
+        "queries": [
+          {
+            "query_id": "q05_missing_user_stats",
+            "referenced_partition_columns": ["region"],
+            "retained_partition_filter_columns": ["region"],
+            "removed_partition_filter_columns": [],
+            "partition_count": 5,
+            "selected_partition_count": 2,
+            "unknown_partition_count": 0,
+            "partition_prune_ratio": 0.6,
+            "candidate_files": 3,
+            "candidate_bytes": 254,
+            "candidate_rows": 290,
+            "candidate_file_prune_ratio": 0.5,
+            "conservative_all_partitions": false,
+            "partition_prune_ratio_delta": 0.0,
+            "candidate_file_prune_ratio_delta": 0.0,
+            "candidate_files_delta": 0,
+            "candidate_bytes_delta": 0,
+            "reasons": []
+          }
+        ],
+        "totals": {"candidate_files": 37, "candidate_bytes": 3092}
+      },
+      {
+        "layout_id": "without:region",
+        "removed_columns": ["region"],
+        "remaining_columns": ["dt"],
+        "partition_count": 3,
+        "merged_group_count": 2,
+        "queries": [
+          {
+            "query_id": "q05_missing_user_stats",
+            "removed_partition_filter_columns": ["region"],
+            "retained_partition_filter_columns": [],
+            "partition_count": 3,
+            "selected_partition_count": 3,
+            "partition_prune_ratio": 0.0,
+            "candidate_file_prune_ratio": 0.0,
+            "candidate_files": 6,
+            "candidate_bytes": 497,
+            "conservative_all_partitions": true,
+            "candidate_files_delta": 3,
+            "candidate_bytes_delta": 243,
+            "reasons": [
+              "CONSERVATIVE_ALL_PARTITIONS_RETAINED:region",
+              "MERGED_PARTITION_PREDICATE_UNDECIDABLE:region",
+              "PARTITIONS_MERGED:5->3",
+              "QUERY_LOST_ONLY_PARTITION_FILTER:region",
+              "REMOVED_PARTITION_FILTER_COLUMNS:region"
+            ]
+          }
+        ],
+        "totals": {"candidate_files": 45, "candidate_bytes": 3734,
+                   "candidate_files_delta": 8, "candidate_bytes_delta": 642}
+      }
+    ]
+  }
 }
 ```
 
 `scanned_files` 在 summary 的查询级是文件数；顶层 `scan.scanned_files` 是各查询文件数之和（文件次，不是去重文件数），用于表达整个 workload 的累计扫描量。
+
+### 5.6 `layout_evaluation`
+
+分区布局评估段落，回答“移除某个/某些分区列后各查询的裁剪收益如何变化”。
+
+| 字段 | 含义 |
+| --- | --- |
+| `table` | 表名、分区列、当前分区数/文件数/字节数、单文件分区占比 |
+| `columns[]` | 每个分区列的基数、逐值文件/字节/行分布、文件数与字节数分布统计、单文件分区数及占比 |
+| `layouts[]` | 布局列表；`layouts[0].layout_id` 恒为 `current`，其后为各个反事实布局 |
+| `layouts[].merged_group_count` | 由多个旧分区合并而来的新分区个数 |
+| `layouts[].queries[]` | 每条查询在该布局下的重裁剪结果 |
+| `layouts[].totals` | 各查询候选文件/字节合计及相对当前布局的 delta（`current` 无 delta） |
+
+`layouts[].queries[]` 字段：
+
+| 字段 | 含义 |
+| --- | --- |
+| `referenced_partition_columns` | 查询谓词引用的分区列（按当前表声明） |
+| `retained_partition_filter_columns` | 该布局中仍能用于分区过滤的被引用列 |
+| `removed_partition_filter_columns` | 因移除而失去的过滤列 |
+| `partition_count` / `selected_partition_count` / `unknown_partition_count` | 新布局下的分区计数 |
+| `partition_prune_ratio` | `(partition_count - selected_partition_count) / partition_count`，即 `partition_pruner` 的分区计数口径 |
+| `candidate_files` / `candidate_bytes` / `candidate_rows` | 保留新分区的真实文件集合求和 |
+| `candidate_file_prune_ratio` | `(table_files - candidate_files) / table_files`，与审计报告查询级 `partition_prune_ratio` 同口径 |
+| `conservative_all_partitions` | 是否因失去唯一分区过滤能力而保守保留全部新分区 |
+| `*_delta` | 相对当前布局的变化；`current` 中全部为 0 |
+| `reasons` | 稳定原因码列表，见 `docs/DESIGN.md` 3.9 |
+
+反事实布局按移除子集排序：先按子集大小，再按列名元组字典序。`layout_id` 为 `without:<列1>,<列2>`。所有浮点字段最多 6 位小数，输出完全确定。
 
 ## 6. SQLite ledger
 
@@ -475,12 +604,16 @@ diagnostics:
 
 主键 `(run_id, kind)`。kind 为 `manifest` / `workload` / `config`，sha256 为输入指纹。
 
-### 6.6 幂等与读取
+### 6.6 `layout_evaluations`
 
-- 外键启用 `ON DELETE CASCADE`；写入前按 `diagnostics → queries → artifacts → input_fingerprints → runs` 顺序删除同 run_id 的旧记录，再插入新记录，全部在同一事务内。
+主键 `run_id`。列：`payload_json`，存储完整的 `layout_evaluation` 对象（与 `summary["layout_evaluation"]` 一致，规范 JSON 排序）。没有布局评估时该 run 不写入行；读取时为 `null`。`get_run(run_id)` 的结果包含 `layout_evaluation`，只读 server 在 run 详情页渲染同一段落。
+
+### 6.7 幂等与读取
+
+- 外键启用 `ON DELETE CASCADE`；写入前按 `diagnostics → queries → artifacts → input_fingerprints → layout_evaluations → runs` 顺序删除同 run_id 的旧记录，再插入新记录，全部在同一事务内。
 - 对同一 run_id 重跑：行数不变，内容替换为该次结果。
 - `recent_runs(limit)` 按 created_at、run_id 倒序读取。
-- `get_run(run_id)` 返回 runs、queries、diagnostics、artifacts、fingerprints 的组合视图；只读 server 使用该视图。
+- `get_run(run_id)` 返回 runs、queries、diagnostics、artifacts、fingerprints、layout_evaluation 的组合视图；只读 server 使用该视图。
 - 不提供更新单条记录、删除 run、写页面或调度接口。
 
 ## 7. 错误对象

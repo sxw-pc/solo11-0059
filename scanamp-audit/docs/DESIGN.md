@@ -36,6 +36,7 @@
 | 引擎 | `engine/partition_pruner.py` | 用精确分区值裁剪分区，输出 keep/drop/unknown 决策 |
 | 引擎 | `engine/file_pruner.py` | 用 sidecar 统计裁剪文件，输出扫描/丢弃/未知和估计命中 |
 | 引擎 | `engine/metrics.py` | 裁剪比例、扫描字节、放大倍数、OR 分支扩张 |
+| 引擎 | `engine/layout_evaluator.py` | 分区列基数/分布统计、反事实布局合并与重裁剪评估 |
 | 引擎 | `engine/diagnostics.py` | 8 条可配置诊断规则 |
 | 引擎 | `engine/auditor.py` | 编排查询结果、summary、诊断 ID、输入指纹 |
 | 报告 | `report/format.py` | 格式化、Markdown/HTML 转义、JSON 稳定输出 |
@@ -201,8 +202,38 @@ AND 为子选择率乘积；OR 使用 `1 - ∏(1 - s_i)`，并钳制到 `[0, 1]`
 - 汇总 counts、扫描指标、排名、诊断摘要。
 - manifest/workload/config 指纹。
 - 运行时 `generated_at`（summary 不含它）。
+- `layout_evaluation`：分区布局评估段落，见 3.9。
 
-### 3.9 报告与台账
+### 3.9 分区布局评估
+
+`engine/layout_evaluator.py` 回答布局设计评审问题：若从分区布局中移除某个（或某几个）分区列，各查询的分区裁剪收益如何变化。
+
+**列统计。** 对每个分区列，按该列的取值单独分组，汇总每组的分区数、文件数、字节数和行数，输出：
+
+- `cardinality`：该列在表中的不同取值个数。
+- `values[]`：每个取值的 `{value, partition_count, file_count, byte_size, row_count, single_file}`。
+- `file_count_distribution` / `byte_size_distribution`：各取值文件数/字节数的 `min`、`median`、`mean`、`max`、`total`。
+- `single_file_partition_count` / `single_file_partition_ratio`：文件数恰为 1 的取值个数及占比。
+
+**反事实布局。** 对分区列的每个非空真子集（按子集大小、再按列名排序），构造“移除这些列”的布局：保留其余分区列，把旧分区按剩余列的值合并为新的 `partition_id`。合并时直接汇集旧分区的真实 `ManifestFile` 对象，因此新分区的 `file_count`、`byte_size`、`row_count` 都是合并后真实文件集合的求和，而不是按旧文件条数估算。`merged_group_count` 记录有多少个新分区由多个旧分区合并而成。
+
+**查询重裁剪。** 在合并后的布局上对每条查询重新运行 `prune_partitions`，报告：
+
+- `partition_prune_ratio`：`(新分区数 - 保留分区数) / 新分区数`，直接来自重新执行的 `prune_partitions` 的 `prune_ratio`；新布局分区总数更少，因此该比例可能反而上升。
+- `selected_partition_count`：保留的新分区数。
+- `candidate_files` / `candidate_bytes` / `candidate_rows`：由保留新分区的真实文件集合求和，并与当前布局给出 `*_delta`。
+- `candidate_file_prune_ratio`：`(表文件数 - candidate_files) / 表文件数`，与审计报告中已有的查询级 `partition_prune_ratio` 定义一致，可直接对比；当前布局下两者数值相同。
+- `reasons`：稳定原因码列表，例如 `REMOVED_PARTITION_FILTER_COLUMNS:region`、`MERGED_PARTITION_PREDICATE_UNDECIDABLE:region`、`QUERY_LOST_ONLY_PARTITION_FILTER:region`、`CONSERVATIVE_ALL_PARTITIONS_RETAINED:region`、`PARTITIONS_MERGED:5->3`、`PARTITION_PRUNE_RATIO_INCREASED`、`CANDIDATE_BYTES_INCREASED`。
+
+**保守语义。** 若某查询引用的分区列全部被移除，它在当前布局下的分区过滤能力在反事实布局中完全失去。此时不把裁剪率简单置零，而是保守地保留全部新分区，并用合并后的真实文件集合重算 `candidate_files`/`candidate_bytes`，同时标记 `conservative_all_partitions=true` 和 `QUERY_LOST_ONLY_PARTITION_FILTER:*`。若查询只失去部分分区过滤列，剩余列仍可正常裁剪；谓词中失去的列在新分区上由三值求值给出 `unknown`，不会被误判为 `false` 而错误丢弃。
+
+**确定性。** 移除子集按 `(大小, 列名元组)` 排序，`layouts[0]` 恒为 `current`，每个反事实布局的 `layout_id` 为 `without:<逗号连接的列名>`；同一输入重复运行得到逐字节相同的结果。
+
+反事实布局覆盖分区列的完整幂集（`2^n - 1` 个非空子集），因此评估成本随分区列数指数增长；离线场景下面向分区列较少（通常 2–4 个）的表设计评审，这一规模是可控的。
+
+该段落同时写入 `summary["layout_evaluation"]`、`report.json` 的 `layout_evaluation`、Markdown/HTML 报告的“Partition layout evaluation”章节，以及 ledger 的 `layout_evaluations` 表。
+
+### 3.10 报告与台账
 
 `renderer` 写四个文件并计算 SHA-256：
 
@@ -256,6 +287,7 @@ ledger 在一个事务中先删除相同 `run_id` 的子记录和主记录，再
 - `test_expr_tokenizer.py` / `test_expr_parser.py`：词法、优先级、AST、非法语法、类型检查、函数分析。
 - `test_intervals.py`：闭区间、点区间、日期重叠。
 - `test_partition_pruner.py` / `test_file_pruner.py`：AND/OR/NOT、NULL、缺统计、保守保留。
+- `test_layout_evaluator.py`：列基数与单文件占比、去列合并后的真实文件集合、失去唯一分区过滤列时的保守重算、反事实裁剪率上升、多列组合去除的确定性排序。
 - `test_metrics.py` / `test_diagnostics.py`：公式、OR 扩张、每条规则的命中/不命中和配置。
 - `test_loader_security.py`：路径穿越、绝对路径、尺寸/分区/统计错误。
 - `test_report_render.py`：转义、自包含、无外链。
@@ -264,7 +296,9 @@ ledger 在一个事务中先删除相同 `run_id` 的子记录和主记录，再
 - `test_server_offline.py`：路由、只读、本地绑定、无非本地 host。
 - `test_golden.py`：summary/diagnostic golden 和确定性。
 
-代码规模按 `src` + `tests` 物理行统计：4404 行（源码 3722、测试 682），低于 4500 行上限；单文件最大 260 行，低于 300 行上限。为控制行数，模块内不强制保留函数之间的空行，但通过 docstring、分段顺序和独立模块维持可读性。
+代码规模按 `src` + `tests` 物理行统计：5132 行（源码 4167、测试 965）；单文件最大 289 行，低于 300 行上限。为控制行数，模块内不强制保留函数之间的空行，但通过 docstring、分段顺序和独立模块维持可读性。
+
+分区布局评估（3.9）是本项目第 3 节之外唯一的规模增长点：新增 `engine/layout_evaluator.py`（289 行）和 `tests/test_layout_evaluator.py`（250 行），报告/台账只在既有 writer 中追加段落和一张表。
 
 ## 8. 扩展点
 

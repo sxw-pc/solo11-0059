@@ -24,6 +24,14 @@ def test_routes_and_read_only(demo_ledger):
     assert http.put("/runs/demo-run").status_code == 405
     assert http.head("/").status_code == 200
 
+def test_layout_evaluation_visible_in_run_view(demo_ledger):
+    http = client(demo_ledger)
+    run = http.get("/runs/demo-run")
+    assert run.status_code == 200
+    assert b"Partition layout evaluation" in run.data
+    assert b"without:dt,region" in run.data
+    assert b"conservative_all_partitions" in run.data or b"CONSERVATIVE" in run.data
+
 def test_request_from_worker_thread(demo_ledger):
     app = create_app(demo_ledger, allow_outside=True)
     with ThreadPoolExecutor(max_workers=1) as pool:

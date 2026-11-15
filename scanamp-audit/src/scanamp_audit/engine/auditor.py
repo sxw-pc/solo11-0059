@@ -8,6 +8,7 @@ from ..schema import round_float
 from ..workload import query_analysis
 from .diagnostics import evaluate_diagnostics
 from .file_pruner import prune_files
+from .layout_evaluator import evaluate_layouts
 from .metrics import compute_metrics, compute_or_branches
 from .partition_pruner import prune_partitions
 
@@ -48,7 +49,8 @@ def _query_result(
     }
 def _summary(query_results: list[dict[str, Any]], table: TableManifest,
              diagnostics: list[dict[str, Any]], config: AuditConfig,
-             run_id: str, fingerprints: dict[str, str]) -> dict[str, Any]:
+             run_id: str, fingerprints: dict[str, str],
+             layout_evaluation: dict[str, Any] | None = None) -> dict[str, Any]:
     scanned_files = sum(item["metrics"]["scanned_files"] for item in query_results)
     scanned_bytes = sum(item["metrics"]["scanned_bytes"] for item in query_results)
     matched_bytes = sum(item["metrics"]["estimated_matched_bytes"] for item in query_results)
@@ -109,6 +111,7 @@ def _summary(query_results: list[dict[str, Any]], table: TableManifest,
              "severity": item["severity"], "query_id": item["query_id"]}
             for item in diagnostics
         ],
+        "layout_evaluation": layout_evaluation or {},
     }
 def run_audit(
     table: TableManifest,
@@ -129,7 +132,8 @@ def run_audit(
         "workload": workload.fingerprint,
         "config": config.fingerprint,
     }
-    summary = _summary(query_results, table, serialized, config, run_id, fingerprints)
+    layout = evaluate_layouts(table, workload.queries)
+    summary = _summary(query_results, table, serialized, config, run_id, fingerprints, layout)
     inputs = {
         "lake_name": table.source_name,
         "workload_file": workload.source_name,
@@ -146,4 +150,5 @@ def run_audit(
         diagnostics=serialized,
         summary=summary,
         inputs=inputs,
+        layout_evaluation=layout,
     )

@@ -68,6 +68,10 @@ CREATE TABLE IF NOT EXISTS input_fingerprints (
   sha256 TEXT NOT NULL,
   PRIMARY KEY (run_id, kind)
 );
+CREATE TABLE IF NOT EXISTS layout_evaluations (
+  run_id TEXT PRIMARY KEY REFERENCES runs(run_id) ON DELETE CASCADE,
+  payload_json TEXT NOT NULL
+);
 """
 
 class Ledger:
@@ -131,7 +135,8 @@ class Ledger:
         )
         try:
             with self.connection:
-                for table in ("diagnostics", "queries", "artifacts", "input_fingerprints", "runs"):
+                for table in ("diagnostics", "queries", "artifacts", "input_fingerprints",
+                              "layout_evaluations", "runs"):
                     self.connection.execute(f"DELETE FROM {table} WHERE run_id = ?", (result.run_id,))
                 self.connection.execute(
                     "INSERT INTO runs VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", run
@@ -177,6 +182,15 @@ class Ledger:
                     self.connection.execute(
                         "INSERT INTO input_fingerprints VALUES (?,?,?)",
                         (result.run_id, kind, digest),
+                    )
+                if result.layout_evaluation:
+                    self.connection.execute(
+                        "INSERT INTO layout_evaluations VALUES (?,?)",
+                        (
+                            result.run_id,
+                            json.dumps(result.layout_evaluation, sort_keys=True,
+                                       ensure_ascii=False),
+                        ),
                     )
         except sqlite3.Error as exc:
             raise LedgerError("failed to write ledger rows", location=str(self.path),
@@ -227,7 +241,18 @@ class Ledger:
                 (run_id,),
             ).fetchall()
         }
+        row = None
+        if self._has_table("layout_evaluations"):
+            row = self.connection.execute(
+                "SELECT payload_json FROM layout_evaluations WHERE run_id = ?", (run_id,)
+            ).fetchone()
+        run["layout_evaluation"] = json.loads(row["payload_json"]) if row else None
         return run
+    def _has_table(self, name: str) -> bool:
+        row = self.connection.execute(
+            "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?", (name,)
+        ).fetchone()
+        return row is not None
     @staticmethod
     def _run_dict(row: sqlite3.Row) -> dict[str, Any]:
         return {

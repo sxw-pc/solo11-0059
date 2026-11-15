@@ -91,6 +91,1185 @@
     "manifest": "4a854e74c38671a9a3e5f875e942e39054c805450411792ba821a57a0cecfd74",
     "workload": "1222003d8892fbc4ab1b5bc6d01080e803a34e475b80c7a2ef63f42595d385e4"
   },
+  "layout_evaluation": {
+    "columns": [
+      {
+        "byte_size_distribution": {
+          "count": 3,
+          "max": 255,
+          "mean": 165.666667,
+          "median": 164.0,
+          "min": 78,
+          "total": 497
+        },
+        "cardinality": 3,
+        "column": "dt",
+        "file_count_distribution": {
+          "count": 3,
+          "max": 3,
+          "mean": 2.0,
+          "median": 2.0,
+          "min": 1,
+          "total": 6
+        },
+        "partition_count": 5,
+        "single_file_partition_count": 1,
+        "single_file_partition_ratio": 0.333333,
+        "type": "date",
+        "values": [
+          {
+            "byte_size": 255,
+            "file_count": 3,
+            "partition_count": 2,
+            "row_count": 300,
+            "single_file": false,
+            "value": "2024-01-01"
+          },
+          {
+            "byte_size": 164,
+            "file_count": 2,
+            "partition_count": 2,
+            "row_count": 200,
+            "single_file": false,
+            "value": "2024-01-02"
+          },
+          {
+            "byte_size": 78,
+            "file_count": 1,
+            "partition_count": 1,
+            "row_count": 70,
+            "single_file": true,
+            "value": "2024-01-03"
+          }
+        ]
+      },
+      {
+        "byte_size_distribution": {
+          "count": 4,
+          "max": 254,
+          "mean": 124.25,
+          "median": 82.5,
+          "min": 78,
+          "total": 497
+        },
+        "cardinality": 4,
+        "column": "region",
+        "file_count_distribution": {
+          "count": 4,
+          "max": 3,
+          "mean": 1.5,
+          "median": 1.0,
+          "min": 1,
+          "total": 6
+        },
+        "partition_count": 5,
+        "single_file_partition_count": 3,
+        "single_file_partition_ratio": 0.75,
+        "type": "string",
+        "values": [
+          {
+            "byte_size": 254,
+            "file_count": 3,
+            "partition_count": 2,
+            "row_count": 290,
+            "single_file": false,
+            "value": "alpha"
+          },
+          {
+            "byte_size": 87,
+            "file_count": 1,
+            "partition_count": 1,
+            "row_count": 110,
+            "single_file": true,
+            "value": "beta"
+          },
+          {
+            "byte_size": 78,
+            "file_count": 1,
+            "partition_count": 1,
+            "row_count": 100,
+            "single_file": true,
+            "value": "delta"
+          },
+          {
+            "byte_size": 78,
+            "file_count": 1,
+            "partition_count": 1,
+            "row_count": 70,
+            "single_file": true,
+            "value": "gamma"
+          }
+        ]
+      }
+    ],
+    "layouts": [
+      {
+        "byte_size": 497,
+        "file_count": 6,
+        "layout_id": "current",
+        "merged_group_count": 0,
+        "partition_count": 5,
+        "queries": [
+          {
+            "candidate_bytes": 254,
+            "candidate_bytes_delta": 0,
+            "candidate_file_prune_ratio": 0.5,
+            "candidate_file_prune_ratio_delta": 0.0,
+            "candidate_files": 3,
+            "candidate_files_delta": 0,
+            "candidate_rows": 290,
+            "conservative_all_partitions": false,
+            "partition_count": 5,
+            "partition_prune_ratio": 0.6,
+            "partition_prune_ratio_delta": 0.0,
+            "query_id": "q01_partition_plus_amount",
+            "reasons": [],
+            "referenced_partition_columns": [
+              "dt",
+              "region"
+            ],
+            "removed_partition_filter_columns": [],
+            "retained_partition_filter_columns": [
+              "dt",
+              "region"
+            ],
+            "selected_partition_count": 2,
+            "unknown_partition_count": 2
+          },
+          {
+            "candidate_bytes": 497,
+            "candidate_bytes_delta": 0,
+            "candidate_file_prune_ratio": 0.0,
+            "candidate_file_prune_ratio_delta": 0.0,
+            "candidate_files": 6,
+            "candidate_files_delta": 0,
+            "candidate_rows": 570,
+            "conservative_all_partitions": false,
+            "partition_count": 5,
+            "partition_prune_ratio": 0.0,
+            "partition_prune_ratio_delta": 0.0,
+            "query_id": "q02_data_only_event",
+            "reasons": [],
+            "referenced_partition_columns": [],
+            "removed_partition_filter_columns": [],
+            "retained_partition_filter_columns": [],
+            "selected_partition_count": 5,
+            "unknown_partition_count": 5
+          },
+          {
+            "candidate_bytes": 497,
+            "candidate_bytes_delta": 0,
+            "candidate_file_prune_ratio": 0.0,
+            "candidate_file_prune_ratio_delta": 0.0,
+            "candidate_files": 6,
+            "candidate_files_delta": 0,
+            "candidate_rows": 570,
+            "conservative_all_partitions": false,
+            "partition_count": 5,
+            "partition_prune_ratio": 0.0,
+            "partition_prune_ratio_delta": 0.0,
+            "query_id": "q03_function_dt",
+            "reasons": [],
+            "referenced_partition_columns": [
+              "dt"
+            ],
+            "removed_partition_filter_columns": [],
+            "retained_partition_filter_columns": [
+              "dt"
+            ],
+            "selected_partition_count": 5,
+            "unknown_partition_count": 5
+          },
+          {
+            "candidate_bytes": 255,
+            "candidate_bytes_delta": 0,
+            "candidate_file_prune_ratio": 0.5,
+            "candidate_file_prune_ratio_delta": 0.0,
+            "candidate_files": 3,
+            "candidate_files_delta": 0,
+            "candidate_rows": 270,
+            "conservative_all_partitions": false,
+            "partition_count": 5,
+            "partition_prune_ratio": 0.6,
+            "partition_prune_ratio_delta": 0.0,
+            "query_id": "q04_or_branches",
+            "reasons": [],
+            "referenced_partition_columns": [
+              "dt",
+              "region"
+            ],
+            "removed_partition_filter_columns": [],
+            "retained_partition_filter_columns": [
+              "dt",
+              "region"
+            ],
+            "selected_partition_count": 2,
+            "unknown_partition_count": 2
+          },
+          {
+            "candidate_bytes": 254,
+            "candidate_bytes_delta": 0,
+            "candidate_file_prune_ratio": 0.5,
+            "candidate_file_prune_ratio_delta": 0.0,
+            "candidate_files": 3,
+            "candidate_files_delta": 0,
+            "candidate_rows": 290,
+            "conservative_all_partitions": false,
+            "partition_count": 5,
+            "partition_prune_ratio": 0.6,
+            "partition_prune_ratio_delta": 0.0,
+            "query_id": "q05_missing_user_stats",
+            "reasons": [],
+            "referenced_partition_columns": [
+              "region"
+            ],
+            "removed_partition_filter_columns": [],
+            "retained_partition_filter_columns": [
+              "region"
+            ],
+            "selected_partition_count": 2,
+            "unknown_partition_count": 2
+          },
+          {
+            "candidate_bytes": 497,
+            "candidate_bytes_delta": 0,
+            "candidate_file_prune_ratio": 0.0,
+            "candidate_file_prune_ratio_delta": 0.0,
+            "candidate_files": 6,
+            "candidate_files_delta": 0,
+            "candidate_rows": 570,
+            "conservative_all_partitions": false,
+            "partition_count": 5,
+            "partition_prune_ratio": 0.0,
+            "partition_prune_ratio_delta": 0.0,
+            "query_id": "q06_wide_date_range",
+            "reasons": [],
+            "referenced_partition_columns": [
+              "dt"
+            ],
+            "removed_partition_filter_columns": [],
+            "retained_partition_filter_columns": [
+              "dt"
+            ],
+            "selected_partition_count": 5,
+            "unknown_partition_count": 0
+          },
+          {
+            "candidate_bytes": 497,
+            "candidate_bytes_delta": 0,
+            "candidate_file_prune_ratio": 0.0,
+            "candidate_file_prune_ratio_delta": 0.0,
+            "candidate_files": 6,
+            "candidate_files_delta": 0,
+            "candidate_rows": 570,
+            "conservative_all_partitions": false,
+            "partition_count": 5,
+            "partition_prune_ratio": 0.0,
+            "partition_prune_ratio_delta": 0.0,
+            "query_id": "q07_null_status",
+            "reasons": [],
+            "referenced_partition_columns": [],
+            "removed_partition_filter_columns": [],
+            "retained_partition_filter_columns": [],
+            "selected_partition_count": 5,
+            "unknown_partition_count": 5
+          },
+          {
+            "candidate_bytes": 341,
+            "candidate_bytes_delta": 0,
+            "candidate_file_prune_ratio": 0.333333,
+            "candidate_file_prune_ratio_delta": 0.0,
+            "candidate_files": 4,
+            "candidate_files_delta": 0,
+            "candidate_rows": 400,
+            "conservative_all_partitions": false,
+            "partition_count": 5,
+            "partition_prune_ratio": 0.4,
+            "partition_prune_ratio_delta": 0.0,
+            "query_id": "q08_in_and_between",
+            "reasons": [],
+            "referenced_partition_columns": [
+              "region"
+            ],
+            "removed_partition_filter_columns": [],
+            "retained_partition_filter_columns": [
+              "region"
+            ],
+            "selected_partition_count": 3,
+            "unknown_partition_count": 3
+          }
+        ],
+        "remaining_columns": [
+          "dt",
+          "region"
+        ],
+        "removed_columns": [],
+        "single_file_partition_count": 4,
+        "single_file_partition_ratio": 0.8,
+        "totals": {
+          "candidate_bytes": 3092,
+          "candidate_files": 37
+        }
+      },
+      {
+        "byte_size": 497,
+        "file_count": 6,
+        "layout_id": "without:dt",
+        "merged_group_count": 1,
+        "partition_count": 4,
+        "queries": [
+          {
+            "candidate_bytes": 254,
+            "candidate_bytes_delta": 0,
+            "candidate_file_prune_ratio": 0.5,
+            "candidate_file_prune_ratio_delta": 0.0,
+            "candidate_files": 3,
+            "candidate_files_delta": 0,
+            "candidate_rows": 290,
+            "conservative_all_partitions": false,
+            "partition_count": 4,
+            "partition_prune_ratio": 0.75,
+            "partition_prune_ratio_delta": 0.15,
+            "query_id": "q01_partition_plus_amount",
+            "reasons": [
+              "CANDIDATE_BYTES_UNCHANGED",
+              "CANDIDATE_FILES_UNCHANGED",
+              "CANDIDATE_FILE_PRUNE_RATIO_UNCHANGED",
+              "MERGED_PARTITION_PREDICATE_UNDECIDABLE:dt",
+              "PARTITIONS_MERGED:5->4",
+              "PARTITION_PRUNE_RATIO_INCREASED",
+              "REMOVED_PARTITION_FILTER_COLUMNS:dt"
+            ],
+            "referenced_partition_columns": [
+              "dt",
+              "region"
+            ],
+            "removed_partition_filter_columns": [
+              "dt"
+            ],
+            "retained_partition_filter_columns": [
+              "region"
+            ],
+            "selected_partition_count": 1,
+            "unknown_partition_count": 1
+          },
+          {
+            "candidate_bytes": 497,
+            "candidate_bytes_delta": 0,
+            "candidate_file_prune_ratio": 0.0,
+            "candidate_file_prune_ratio_delta": 0.0,
+            "candidate_files": 6,
+            "candidate_files_delta": 0,
+            "candidate_rows": 570,
+            "conservative_all_partitions": false,
+            "partition_count": 4,
+            "partition_prune_ratio": 0.0,
+            "partition_prune_ratio_delta": 0.0,
+            "query_id": "q02_data_only_event",
+            "reasons": [
+              "CANDIDATE_BYTES_UNCHANGED",
+              "CANDIDATE_FILES_UNCHANGED",
+              "CANDIDATE_FILE_PRUNE_RATIO_UNCHANGED",
+              "PARTITIONS_MERGED:5->4",
+              "PARTITION_PRUNE_RATIO_UNCHANGED",
+              "QUERY_HAD_NO_PARTITION_FILTER",
+              "REMOVED_COLUMNS_NOT_REFERENCED_BY_QUERY"
+            ],
+            "referenced_partition_columns": [],
+            "removed_partition_filter_columns": [],
+            "retained_partition_filter_columns": [],
+            "selected_partition_count": 4,
+            "unknown_partition_count": 4
+          },
+          {
+            "candidate_bytes": 497,
+            "candidate_bytes_delta": 0,
+            "candidate_file_prune_ratio": 0.0,
+            "candidate_file_prune_ratio_delta": 0.0,
+            "candidate_files": 6,
+            "candidate_files_delta": 0,
+            "candidate_rows": 570,
+            "conservative_all_partitions": true,
+            "partition_count": 4,
+            "partition_prune_ratio": 0.0,
+            "partition_prune_ratio_delta": 0.0,
+            "query_id": "q03_function_dt",
+            "reasons": [
+              "CANDIDATE_BYTES_UNCHANGED",
+              "CANDIDATE_FILES_UNCHANGED",
+              "CANDIDATE_FILE_PRUNE_RATIO_UNCHANGED",
+              "CONSERVATIVE_ALL_PARTITIONS_RETAINED:dt",
+              "MERGED_PARTITION_PREDICATE_UNDECIDABLE:dt",
+              "PARTITIONS_MERGED:5->4",
+              "PARTITION_PRUNE_RATIO_UNCHANGED",
+              "QUERY_LOST_ONLY_PARTITION_FILTER:dt",
+              "REMOVED_PARTITION_FILTER_COLUMNS:dt"
+            ],
+            "referenced_partition_columns": [
+              "dt"
+            ],
+            "removed_partition_filter_columns": [
+              "dt"
+            ],
+            "retained_partition_filter_columns": [],
+            "selected_partition_count": 4,
+            "unknown_partition_count": 4
+          },
+          {
+            "candidate_bytes": 497,
+            "candidate_bytes_delta": 242,
+            "candidate_file_prune_ratio": 0.0,
+            "candidate_file_prune_ratio_delta": -0.5,
+            "candidate_files": 6,
+            "candidate_files_delta": 3,
+            "candidate_rows": 570,
+            "conservative_all_partitions": false,
+            "partition_count": 4,
+            "partition_prune_ratio": 0.0,
+            "partition_prune_ratio_delta": -0.6,
+            "query_id": "q04_or_branches",
+            "reasons": [
+              "CANDIDATE_BYTES_INCREASED",
+              "CANDIDATE_FILES_INCREASED",
+              "CANDIDATE_FILE_PRUNE_RATIO_DECREASED",
+              "MERGED_PARTITION_PREDICATE_UNDECIDABLE:dt",
+              "PARTITIONS_MERGED:5->4",
+              "PARTITION_PRUNE_RATIO_DECREASED",
+              "REMOVED_PARTITION_FILTER_COLUMNS:dt"
+            ],
+            "referenced_partition_columns": [
+              "dt",
+              "region"
+            ],
+            "removed_partition_filter_columns": [
+              "dt"
+            ],
+            "retained_partition_filter_columns": [
+              "region"
+            ],
+            "selected_partition_count": 4,
+            "unknown_partition_count": 4
+          },
+          {
+            "candidate_bytes": 254,
+            "candidate_bytes_delta": 0,
+            "candidate_file_prune_ratio": 0.5,
+            "candidate_file_prune_ratio_delta": 0.0,
+            "candidate_files": 3,
+            "candidate_files_delta": 0,
+            "candidate_rows": 290,
+            "conservative_all_partitions": false,
+            "partition_count": 4,
+            "partition_prune_ratio": 0.75,
+            "partition_prune_ratio_delta": 0.15,
+            "query_id": "q05_missing_user_stats",
+            "reasons": [
+              "CANDIDATE_BYTES_UNCHANGED",
+              "CANDIDATE_FILES_UNCHANGED",
+              "CANDIDATE_FILE_PRUNE_RATIO_UNCHANGED",
+              "PARTITIONS_MERGED:5->4",
+              "PARTITION_PRUNE_RATIO_INCREASED",
+              "REMOVED_COLUMNS_NOT_REFERENCED_BY_QUERY"
+            ],
+            "referenced_partition_columns": [
+              "region"
+            ],
+            "removed_partition_filter_columns": [],
+            "retained_partition_filter_columns": [
+              "region"
+            ],
+            "selected_partition_count": 1,
+            "unknown_partition_count": 1
+          },
+          {
+            "candidate_bytes": 497,
+            "candidate_bytes_delta": 0,
+            "candidate_file_prune_ratio": 0.0,
+            "candidate_file_prune_ratio_delta": 0.0,
+            "candidate_files": 6,
+            "candidate_files_delta": 0,
+            "candidate_rows": 570,
+            "conservative_all_partitions": true,
+            "partition_count": 4,
+            "partition_prune_ratio": 0.0,
+            "partition_prune_ratio_delta": 0.0,
+            "query_id": "q06_wide_date_range",
+            "reasons": [
+              "CANDIDATE_BYTES_UNCHANGED",
+              "CANDIDATE_FILES_UNCHANGED",
+              "CANDIDATE_FILE_PRUNE_RATIO_UNCHANGED",
+              "CONSERVATIVE_ALL_PARTITIONS_RETAINED:dt",
+              "MERGED_PARTITION_PREDICATE_UNDECIDABLE:dt",
+              "PARTITIONS_MERGED:5->4",
+              "PARTITION_PRUNE_RATIO_UNCHANGED",
+              "QUERY_LOST_ONLY_PARTITION_FILTER:dt",
+              "REMOVED_PARTITION_FILTER_COLUMNS:dt"
+            ],
+            "referenced_partition_columns": [
+              "dt"
+            ],
+            "removed_partition_filter_columns": [
+              "dt"
+            ],
+            "retained_partition_filter_columns": [],
+            "selected_partition_count": 4,
+            "unknown_partition_count": 4
+          },
+          {
+            "candidate_bytes": 497,
+            "candidate_bytes_delta": 0,
+            "candidate_file_prune_ratio": 0.0,
+            "candidate_file_prune_ratio_delta": 0.0,
+            "candidate_files": 6,
+            "candidate_files_delta": 0,
+            "candidate_rows": 570,
+            "conservative_all_partitions": false,
+            "partition_count": 4,
+            "partition_prune_ratio": 0.0,
+            "partition_prune_ratio_delta": 0.0,
+            "query_id": "q07_null_status",
+            "reasons": [
+              "CANDIDATE_BYTES_UNCHANGED",
+              "CANDIDATE_FILES_UNCHANGED",
+              "CANDIDATE_FILE_PRUNE_RATIO_UNCHANGED",
+              "PARTITIONS_MERGED:5->4",
+              "PARTITION_PRUNE_RATIO_UNCHANGED",
+              "QUERY_HAD_NO_PARTITION_FILTER",
+              "REMOVED_COLUMNS_NOT_REFERENCED_BY_QUERY"
+            ],
+            "referenced_partition_columns": [],
+            "removed_partition_filter_columns": [],
+            "retained_partition_filter_columns": [],
+            "selected_partition_count": 4,
+            "unknown_partition_count": 4
+          },
+          {
+            "candidate_bytes": 341,
+            "candidate_bytes_delta": 0,
+            "candidate_file_prune_ratio": 0.333333,
+            "candidate_file_prune_ratio_delta": 0.0,
+            "candidate_files": 4,
+            "candidate_files_delta": 0,
+            "candidate_rows": 400,
+            "conservative_all_partitions": false,
+            "partition_count": 4,
+            "partition_prune_ratio": 0.5,
+            "partition_prune_ratio_delta": 0.1,
+            "query_id": "q08_in_and_between",
+            "reasons": [
+              "CANDIDATE_BYTES_UNCHANGED",
+              "CANDIDATE_FILES_UNCHANGED",
+              "CANDIDATE_FILE_PRUNE_RATIO_UNCHANGED",
+              "PARTITIONS_MERGED:5->4",
+              "PARTITION_PRUNE_RATIO_INCREASED",
+              "REMOVED_COLUMNS_NOT_REFERENCED_BY_QUERY"
+            ],
+            "referenced_partition_columns": [
+              "region"
+            ],
+            "removed_partition_filter_columns": [],
+            "retained_partition_filter_columns": [
+              "region"
+            ],
+            "selected_partition_count": 2,
+            "unknown_partition_count": 2
+          }
+        ],
+        "remaining_columns": [
+          "region"
+        ],
+        "removed_columns": [
+          "dt"
+        ],
+        "single_file_partition_count": 3,
+        "single_file_partition_ratio": 0.75,
+        "totals": {
+          "candidate_bytes": 3334,
+          "candidate_bytes_delta": 242,
+          "candidate_files": 40,
+          "candidate_files_delta": 3
+        }
+      },
+      {
+        "byte_size": 497,
+        "file_count": 6,
+        "layout_id": "without:region",
+        "merged_group_count": 2,
+        "partition_count": 3,
+        "queries": [
+          {
+            "candidate_bytes": 419,
+            "candidate_bytes_delta": 165,
+            "candidate_file_prune_ratio": 0.166667,
+            "candidate_file_prune_ratio_delta": -0.333333,
+            "candidate_files": 5,
+            "candidate_files_delta": 2,
+            "candidate_rows": 500,
+            "conservative_all_partitions": false,
+            "partition_count": 3,
+            "partition_prune_ratio": 0.333333,
+            "partition_prune_ratio_delta": -0.266667,
+            "query_id": "q01_partition_plus_amount",
+            "reasons": [
+              "CANDIDATE_BYTES_INCREASED",
+              "CANDIDATE_FILES_INCREASED",
+              "CANDIDATE_FILE_PRUNE_RATIO_DECREASED",
+              "MERGED_PARTITION_PREDICATE_UNDECIDABLE:region",
+              "PARTITIONS_MERGED:5->3",
+              "PARTITION_PRUNE_RATIO_DECREASED",
+              "REMOVED_PARTITION_FILTER_COLUMNS:region"
+            ],
+            "referenced_partition_columns": [
+              "dt",
+              "region"
+            ],
+            "removed_partition_filter_columns": [
+              "region"
+            ],
+            "retained_partition_filter_columns": [
+              "dt"
+            ],
+            "selected_partition_count": 2,
+            "unknown_partition_count": 2
+          },
+          {
+            "candidate_bytes": 497,
+            "candidate_bytes_delta": 0,
+            "candidate_file_prune_ratio": 0.0,
+            "candidate_file_prune_ratio_delta": 0.0,
+            "candidate_files": 6,
+            "candidate_files_delta": 0,
+            "candidate_rows": 570,
+            "conservative_all_partitions": false,
+            "partition_count": 3,
+            "partition_prune_ratio": 0.0,
+            "partition_prune_ratio_delta": 0.0,
+            "query_id": "q02_data_only_event",
+            "reasons": [
+              "CANDIDATE_BYTES_UNCHANGED",
+              "CANDIDATE_FILES_UNCHANGED",
+              "CANDIDATE_FILE_PRUNE_RATIO_UNCHANGED",
+              "PARTITIONS_MERGED:5->3",
+              "PARTITION_PRUNE_RATIO_UNCHANGED",
+              "QUERY_HAD_NO_PARTITION_FILTER",
+              "REMOVED_COLUMNS_NOT_REFERENCED_BY_QUERY"
+            ],
+            "referenced_partition_columns": [],
+            "removed_partition_filter_columns": [],
+            "retained_partition_filter_columns": [],
+            "selected_partition_count": 3,
+            "unknown_partition_count": 3
+          },
+          {
+            "candidate_bytes": 497,
+            "candidate_bytes_delta": 0,
+            "candidate_file_prune_ratio": 0.0,
+            "candidate_file_prune_ratio_delta": 0.0,
+            "candidate_files": 6,
+            "candidate_files_delta": 0,
+            "candidate_rows": 570,
+            "conservative_all_partitions": false,
+            "partition_count": 3,
+            "partition_prune_ratio": 0.0,
+            "partition_prune_ratio_delta": 0.0,
+            "query_id": "q03_function_dt",
+            "reasons": [
+              "CANDIDATE_BYTES_UNCHANGED",
+              "CANDIDATE_FILES_UNCHANGED",
+              "CANDIDATE_FILE_PRUNE_RATIO_UNCHANGED",
+              "PARTITIONS_MERGED:5->3",
+              "PARTITION_PRUNE_RATIO_UNCHANGED",
+              "REMOVED_COLUMNS_NOT_REFERENCED_BY_QUERY"
+            ],
+            "referenced_partition_columns": [
+              "dt"
+            ],
+            "removed_partition_filter_columns": [],
+            "retained_partition_filter_columns": [
+              "dt"
+            ],
+            "selected_partition_count": 3,
+            "unknown_partition_count": 3
+          },
+          {
+            "candidate_bytes": 333,
+            "candidate_bytes_delta": 78,
+            "candidate_file_prune_ratio": 0.333333,
+            "candidate_file_prune_ratio_delta": -0.166667,
+            "candidate_files": 4,
+            "candidate_files_delta": 1,
+            "candidate_rows": 370,
+            "conservative_all_partitions": false,
+            "partition_count": 3,
+            "partition_prune_ratio": 0.333333,
+            "partition_prune_ratio_delta": -0.266667,
+            "query_id": "q04_or_branches",
+            "reasons": [
+              "CANDIDATE_BYTES_INCREASED",
+              "CANDIDATE_FILES_INCREASED",
+              "CANDIDATE_FILE_PRUNE_RATIO_DECREASED",
+              "MERGED_PARTITION_PREDICATE_UNDECIDABLE:region",
+              "PARTITIONS_MERGED:5->3",
+              "PARTITION_PRUNE_RATIO_DECREASED",
+              "REMOVED_PARTITION_FILTER_COLUMNS:region"
+            ],
+            "referenced_partition_columns": [
+              "dt",
+              "region"
+            ],
+            "removed_partition_filter_columns": [
+              "region"
+            ],
+            "retained_partition_filter_columns": [
+              "dt"
+            ],
+            "selected_partition_count": 2,
+            "unknown_partition_count": 2
+          },
+          {
+            "candidate_bytes": 497,
+            "candidate_bytes_delta": 243,
+            "candidate_file_prune_ratio": 0.0,
+            "candidate_file_prune_ratio_delta": -0.5,
+            "candidate_files": 6,
+            "candidate_files_delta": 3,
+            "candidate_rows": 570,
+            "conservative_all_partitions": true,
+            "partition_count": 3,
+            "partition_prune_ratio": 0.0,
+            "partition_prune_ratio_delta": -0.6,
+            "query_id": "q05_missing_user_stats",
+            "reasons": [
+              "CANDIDATE_BYTES_INCREASED",
+              "CANDIDATE_FILES_INCREASED",
+              "CANDIDATE_FILE_PRUNE_RATIO_DECREASED",
+              "CONSERVATIVE_ALL_PARTITIONS_RETAINED:region",
+              "MERGED_PARTITION_PREDICATE_UNDECIDABLE:region",
+              "PARTITIONS_MERGED:5->3",
+              "PARTITION_PRUNE_RATIO_DECREASED",
+              "QUERY_LOST_ONLY_PARTITION_FILTER:region",
+              "REMOVED_PARTITION_FILTER_COLUMNS:region"
+            ],
+            "referenced_partition_columns": [
+              "region"
+            ],
+            "removed_partition_filter_columns": [
+              "region"
+            ],
+            "retained_partition_filter_columns": [],
+            "selected_partition_count": 3,
+            "unknown_partition_count": 3
+          },
+          {
+            "candidate_bytes": 497,
+            "candidate_bytes_delta": 0,
+            "candidate_file_prune_ratio": 0.0,
+            "candidate_file_prune_ratio_delta": 0.0,
+            "candidate_files": 6,
+            "candidate_files_delta": 0,
+            "candidate_rows": 570,
+            "conservative_all_partitions": false,
+            "partition_count": 3,
+            "partition_prune_ratio": 0.0,
+            "partition_prune_ratio_delta": 0.0,
+            "query_id": "q06_wide_date_range",
+            "reasons": [
+              "CANDIDATE_BYTES_UNCHANGED",
+              "CANDIDATE_FILES_UNCHANGED",
+              "CANDIDATE_FILE_PRUNE_RATIO_UNCHANGED",
+              "PARTITIONS_MERGED:5->3",
+              "PARTITION_PRUNE_RATIO_UNCHANGED",
+              "REMOVED_COLUMNS_NOT_REFERENCED_BY_QUERY"
+            ],
+            "referenced_partition_columns": [
+              "dt"
+            ],
+            "removed_partition_filter_columns": [],
+            "retained_partition_filter_columns": [
+              "dt"
+            ],
+            "selected_partition_count": 3,
+            "unknown_partition_count": 0
+          },
+          {
+            "candidate_bytes": 497,
+            "candidate_bytes_delta": 0,
+            "candidate_file_prune_ratio": 0.0,
+            "candidate_file_prune_ratio_delta": 0.0,
+            "candidate_files": 6,
+            "candidate_files_delta": 0,
+            "candidate_rows": 570,
+            "conservative_all_partitions": false,
+            "partition_count": 3,
+            "partition_prune_ratio": 0.0,
+            "partition_prune_ratio_delta": 0.0,
+            "query_id": "q07_null_status",
+            "reasons": [
+              "CANDIDATE_BYTES_UNCHANGED",
+              "CANDIDATE_FILES_UNCHANGED",
+              "CANDIDATE_FILE_PRUNE_RATIO_UNCHANGED",
+              "PARTITIONS_MERGED:5->3",
+              "PARTITION_PRUNE_RATIO_UNCHANGED",
+              "QUERY_HAD_NO_PARTITION_FILTER",
+              "REMOVED_COLUMNS_NOT_REFERENCED_BY_QUERY"
+            ],
+            "referenced_partition_columns": [],
+            "removed_partition_filter_columns": [],
+            "retained_partition_filter_columns": [],
+            "selected_partition_count": 3,
+            "unknown_partition_count": 3
+          },
+          {
+            "candidate_bytes": 497,
+            "candidate_bytes_delta": 156,
+            "candidate_file_prune_ratio": 0.0,
+            "candidate_file_prune_ratio_delta": -0.333333,
+            "candidate_files": 6,
+            "candidate_files_delta": 2,
+            "candidate_rows": 570,
+            "conservative_all_partitions": true,
+            "partition_count": 3,
+            "partition_prune_ratio": 0.0,
+            "partition_prune_ratio_delta": -0.4,
+            "query_id": "q08_in_and_between",
+            "reasons": [
+              "CANDIDATE_BYTES_INCREASED",
+              "CANDIDATE_FILES_INCREASED",
+              "CANDIDATE_FILE_PRUNE_RATIO_DECREASED",
+              "CONSERVATIVE_ALL_PARTITIONS_RETAINED:region",
+              "MERGED_PARTITION_PREDICATE_UNDECIDABLE:region",
+              "PARTITIONS_MERGED:5->3",
+              "PARTITION_PRUNE_RATIO_DECREASED",
+              "QUERY_LOST_ONLY_PARTITION_FILTER:region",
+              "REMOVED_PARTITION_FILTER_COLUMNS:region"
+            ],
+            "referenced_partition_columns": [
+              "region"
+            ],
+            "removed_partition_filter_columns": [
+              "region"
+            ],
+            "retained_partition_filter_columns": [],
+            "selected_partition_count": 3,
+            "unknown_partition_count": 3
+          }
+        ],
+        "remaining_columns": [
+          "dt"
+        ],
+        "removed_columns": [
+          "region"
+        ],
+        "single_file_partition_count": 1,
+        "single_file_partition_ratio": 0.333333,
+        "totals": {
+          "candidate_bytes": 3734,
+          "candidate_bytes_delta": 642,
+          "candidate_files": 45,
+          "candidate_files_delta": 8
+        }
+      },
+      {
+        "byte_size": 497,
+        "file_count": 6,
+        "layout_id": "without:dt,region",
+        "merged_group_count": 1,
+        "partition_count": 1,
+        "queries": [
+          {
+            "candidate_bytes": 497,
+            "candidate_bytes_delta": 243,
+            "candidate_file_prune_ratio": 0.0,
+            "candidate_file_prune_ratio_delta": -0.5,
+            "candidate_files": 6,
+            "candidate_files_delta": 3,
+            "candidate_rows": 570,
+            "conservative_all_partitions": true,
+            "partition_count": 1,
+            "partition_prune_ratio": 0.0,
+            "partition_prune_ratio_delta": -0.6,
+            "query_id": "q01_partition_plus_amount",
+            "reasons": [
+              "CANDIDATE_BYTES_INCREASED",
+              "CANDIDATE_FILES_INCREASED",
+              "CANDIDATE_FILE_PRUNE_RATIO_DECREASED",
+              "CONSERVATIVE_ALL_PARTITIONS_RETAINED:dt,region",
+              "MERGED_PARTITION_PREDICATE_UNDECIDABLE:dt,region",
+              "PARTITIONS_MERGED:5->1",
+              "PARTITION_PRUNE_RATIO_DECREASED",
+              "QUERY_LOST_ONLY_PARTITION_FILTER:dt,region",
+              "REMOVED_PARTITION_FILTER_COLUMNS:dt,region"
+            ],
+            "referenced_partition_columns": [
+              "dt",
+              "region"
+            ],
+            "removed_partition_filter_columns": [
+              "dt",
+              "region"
+            ],
+            "retained_partition_filter_columns": [],
+            "selected_partition_count": 1,
+            "unknown_partition_count": 1
+          },
+          {
+            "candidate_bytes": 497,
+            "candidate_bytes_delta": 0,
+            "candidate_file_prune_ratio": 0.0,
+            "candidate_file_prune_ratio_delta": 0.0,
+            "candidate_files": 6,
+            "candidate_files_delta": 0,
+            "candidate_rows": 570,
+            "conservative_all_partitions": false,
+            "partition_count": 1,
+            "partition_prune_ratio": 0.0,
+            "partition_prune_ratio_delta": 0.0,
+            "query_id": "q02_data_only_event",
+            "reasons": [
+              "CANDIDATE_BYTES_UNCHANGED",
+              "CANDIDATE_FILES_UNCHANGED",
+              "CANDIDATE_FILE_PRUNE_RATIO_UNCHANGED",
+              "PARTITIONS_MERGED:5->1",
+              "PARTITION_PRUNE_RATIO_UNCHANGED",
+              "QUERY_HAD_NO_PARTITION_FILTER",
+              "REMOVED_COLUMNS_NOT_REFERENCED_BY_QUERY"
+            ],
+            "referenced_partition_columns": [],
+            "removed_partition_filter_columns": [],
+            "retained_partition_filter_columns": [],
+            "selected_partition_count": 1,
+            "unknown_partition_count": 1
+          },
+          {
+            "candidate_bytes": 497,
+            "candidate_bytes_delta": 0,
+            "candidate_file_prune_ratio": 0.0,
+            "candidate_file_prune_ratio_delta": 0.0,
+            "candidate_files": 6,
+            "candidate_files_delta": 0,
+            "candidate_rows": 570,
+            "conservative_all_partitions": true,
+            "partition_count": 1,
+            "partition_prune_ratio": 0.0,
+            "partition_prune_ratio_delta": 0.0,
+            "query_id": "q03_function_dt",
+            "reasons": [
+              "CANDIDATE_BYTES_UNCHANGED",
+              "CANDIDATE_FILES_UNCHANGED",
+              "CANDIDATE_FILE_PRUNE_RATIO_UNCHANGED",
+              "CONSERVATIVE_ALL_PARTITIONS_RETAINED:dt",
+              "MERGED_PARTITION_PREDICATE_UNDECIDABLE:dt",
+              "PARTITIONS_MERGED:5->1",
+              "PARTITION_PRUNE_RATIO_UNCHANGED",
+              "QUERY_LOST_ONLY_PARTITION_FILTER:dt",
+              "REMOVED_PARTITION_FILTER_COLUMNS:dt"
+            ],
+            "referenced_partition_columns": [
+              "dt"
+            ],
+            "removed_partition_filter_columns": [
+              "dt"
+            ],
+            "retained_partition_filter_columns": [],
+            "selected_partition_count": 1,
+            "unknown_partition_count": 1
+          },
+          {
+            "candidate_bytes": 497,
+            "candidate_bytes_delta": 242,
+            "candidate_file_prune_ratio": 0.0,
+            "candidate_file_prune_ratio_delta": -0.5,
+            "candidate_files": 6,
+            "candidate_files_delta": 3,
+            "candidate_rows": 570,
+            "conservative_all_partitions": true,
+            "partition_count": 1,
+            "partition_prune_ratio": 0.0,
+            "partition_prune_ratio_delta": -0.6,
+            "query_id": "q04_or_branches",
+            "reasons": [
+              "CANDIDATE_BYTES_INCREASED",
+              "CANDIDATE_FILES_INCREASED",
+              "CANDIDATE_FILE_PRUNE_RATIO_DECREASED",
+              "CONSERVATIVE_ALL_PARTITIONS_RETAINED:dt,region",
+              "MERGED_PARTITION_PREDICATE_UNDECIDABLE:dt,region",
+              "PARTITIONS_MERGED:5->1",
+              "PARTITION_PRUNE_RATIO_DECREASED",
+              "QUERY_LOST_ONLY_PARTITION_FILTER:dt,region",
+              "REMOVED_PARTITION_FILTER_COLUMNS:dt,region"
+            ],
+            "referenced_partition_columns": [
+              "dt",
+              "region"
+            ],
+            "removed_partition_filter_columns": [
+              "dt",
+              "region"
+            ],
+            "retained_partition_filter_columns": [],
+            "selected_partition_count": 1,
+            "unknown_partition_count": 1
+          },
+          {
+            "candidate_bytes": 497,
+            "candidate_bytes_delta": 243,
+            "candidate_file_prune_ratio": 0.0,
+            "candidate_file_prune_ratio_delta": -0.5,
+            "candidate_files": 6,
+            "candidate_files_delta": 3,
+            "candidate_rows": 570,
+            "conservative_all_partitions": true,
+            "partition_count": 1,
+            "partition_prune_ratio": 0.0,
+            "partition_prune_ratio_delta": -0.6,
+            "query_id": "q05_missing_user_stats",
+            "reasons": [
+              "CANDIDATE_BYTES_INCREASED",
+              "CANDIDATE_FILES_INCREASED",
+              "CANDIDATE_FILE_PRUNE_RATIO_DECREASED",
+              "CONSERVATIVE_ALL_PARTITIONS_RETAINED:region",
+              "MERGED_PARTITION_PREDICATE_UNDECIDABLE:region",
+              "PARTITIONS_MERGED:5->1",
+              "PARTITION_PRUNE_RATIO_DECREASED",
+              "QUERY_LOST_ONLY_PARTITION_FILTER:region",
+              "REMOVED_PARTITION_FILTER_COLUMNS:region"
+            ],
+            "referenced_partition_columns": [
+              "region"
+            ],
+            "removed_partition_filter_columns": [
+              "region"
+            ],
+            "retained_partition_filter_columns": [],
+            "selected_partition_count": 1,
+            "unknown_partition_count": 1
+          },
+          {
+            "candidate_bytes": 497,
+            "candidate_bytes_delta": 0,
+            "candidate_file_prune_ratio": 0.0,
+            "candidate_file_prune_ratio_delta": 0.0,
+            "candidate_files": 6,
+            "candidate_files_delta": 0,
+            "candidate_rows": 570,
+            "conservative_all_partitions": true,
+            "partition_count": 1,
+            "partition_prune_ratio": 0.0,
+            "partition_prune_ratio_delta": 0.0,
+            "query_id": "q06_wide_date_range",
+            "reasons": [
+              "CANDIDATE_BYTES_UNCHANGED",
+              "CANDIDATE_FILES_UNCHANGED",
+              "CANDIDATE_FILE_PRUNE_RATIO_UNCHANGED",
+              "CONSERVATIVE_ALL_PARTITIONS_RETAINED:dt",
+              "MERGED_PARTITION_PREDICATE_UNDECIDABLE:dt",
+              "PARTITIONS_MERGED:5->1",
+              "PARTITION_PRUNE_RATIO_UNCHANGED",
+              "QUERY_LOST_ONLY_PARTITION_FILTER:dt",
+              "REMOVED_PARTITION_FILTER_COLUMNS:dt"
+            ],
+            "referenced_partition_columns": [
+              "dt"
+            ],
+            "removed_partition_filter_columns": [
+              "dt"
+            ],
+            "retained_partition_filter_columns": [],
+            "selected_partition_count": 1,
+            "unknown_partition_count": 1
+          },
+          {
+            "candidate_bytes": 497,
+            "candidate_bytes_delta": 0,
+            "candidate_file_prune_ratio": 0.0,
+            "candidate_file_prune_ratio_delta": 0.0,
+            "candidate_files": 6,
+            "candidate_files_delta": 0,
+            "candidate_rows": 570,
+            "conservative_all_partitions": false,
+            "partition_count": 1,
+            "partition_prune_ratio": 0.0,
+            "partition_prune_ratio_delta": 0.0,
+            "query_id": "q07_null_status",
+            "reasons": [
+              "CANDIDATE_BYTES_UNCHANGED",
+              "CANDIDATE_FILES_UNCHANGED",
+              "CANDIDATE_FILE_PRUNE_RATIO_UNCHANGED",
+              "PARTITIONS_MERGED:5->1",
+              "PARTITION_PRUNE_RATIO_UNCHANGED",
+              "QUERY_HAD_NO_PARTITION_FILTER",
+              "REMOVED_COLUMNS_NOT_REFERENCED_BY_QUERY"
+            ],
+            "referenced_partition_columns": [],
+            "removed_partition_filter_columns": [],
+            "retained_partition_filter_columns": [],
+            "selected_partition_count": 1,
+            "unknown_partition_count": 1
+          },
+          {
+            "candidate_bytes": 497,
+            "candidate_bytes_delta": 156,
+            "candidate_file_prune_ratio": 0.0,
+            "candidate_file_prune_ratio_delta": -0.333333,
+            "candidate_files": 6,
+            "candidate_files_delta": 2,
+            "candidate_rows": 570,
+            "conservative_all_partitions": true,
+            "partition_count": 1,
+            "partition_prune_ratio": 0.0,
+            "partition_prune_ratio_delta": -0.4,
+            "query_id": "q08_in_and_between",
+            "reasons": [
+              "CANDIDATE_BYTES_INCREASED",
+              "CANDIDATE_FILES_INCREASED",
+              "CANDIDATE_FILE_PRUNE_RATIO_DECREASED",
+              "CONSERVATIVE_ALL_PARTITIONS_RETAINED:region",
+              "MERGED_PARTITION_PREDICATE_UNDECIDABLE:region",
+              "PARTITIONS_MERGED:5->1",
+              "PARTITION_PRUNE_RATIO_DECREASED",
+              "QUERY_LOST_ONLY_PARTITION_FILTER:region",
+              "REMOVED_PARTITION_FILTER_COLUMNS:region"
+            ],
+            "referenced_partition_columns": [
+              "region"
+            ],
+            "removed_partition_filter_columns": [
+              "region"
+            ],
+            "retained_partition_filter_columns": [],
+            "selected_partition_count": 1,
+            "unknown_partition_count": 1
+          }
+        ],
+        "remaining_columns": [],
+        "removed_columns": [
+          "dt",
+          "region"
+        ],
+        "single_file_partition_count": 0,
+        "single_file_partition_ratio": 0.0,
+        "totals": {
+          "candidate_bytes": 3976,
+          "candidate_bytes_delta": 884,
+          "candidate_files": 48,
+          "candidate_files_delta": 11
+        }
+      }
+    ],
+    "schema_version": "1.0",
+    "table": {
+      "byte_size": 497,
+      "file_count": 6,
+      "name": "demo_events",
+      "partition_columns": [
+        "dt",
+        "region"
+      ],
+      "partition_count": 5,
+      "single_file_partition_count": 4,
+      "single_file_partition_ratio": 0.8
+    }
+  },
   "queries": [
     {
       "diagnostic_count": 0,

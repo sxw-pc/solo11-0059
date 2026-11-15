@@ -43,6 +43,54 @@ def _query_section(query: dict[str, Any]) -> list[str]:
                          for item in query["files"]["decisions"]]))
     lines.append("")
     return lines
+def _layout_section(layout: dict[str, Any]) -> list[str]:
+    lines = [f"### Layout {md_code(layout['layout_id'])}", ""]
+    lines.extend(_table(
+        ["Query", "Partition prune", "File prune", "Selected partitions",
+         "Candidate files", "Files delta", "Candidate bytes", "Bytes delta", "Reasons"],
+        [[item["query_id"], item["partition_prune_ratio"],
+          item["candidate_file_prune_ratio"],
+          f"{item['selected_partition_count']} of {item['partition_count']}",
+          item["candidate_files"], item["candidate_files_delta"],
+          item["candidate_bytes"], item["candidate_bytes_delta"],
+          ", ".join(item["reasons"]) or "-"]
+         for item in layout["queries"]],
+    ))
+    lines.append("")
+    return lines
+def _layout_evaluation_section(evaluation: dict[str, Any]) -> list[str]:
+    if not evaluation:
+        return []
+    lines = ["## Partition layout evaluation", ""]
+    lines.extend(_table(
+        ["Column", "Type", "Cardinality", "Single-file partitions", "Share",
+         "Files min/median/max", "Bytes min/median/max"],
+        [[item["column"], item["type"], item["cardinality"],
+          f"{item['single_file_partition_count']} of {item['cardinality']}",
+          item["single_file_partition_ratio"],
+          f"{item['file_count_distribution']['min']} / "
+          f"{item['file_count_distribution']['median']} / "
+          f"{item['file_count_distribution']['max']}",
+          f"{item['byte_size_distribution']['min']} / "
+          f"{item['byte_size_distribution']['median']} / "
+          f"{item['byte_size_distribution']['max']}"]
+         for item in evaluation["columns"]],
+    ))
+    lines.extend(["", "### Layout comparison", ""])
+    lines.extend(_table(
+        ["Layout", "Removed", "Remaining", "Partitions", "Merged groups", "Files",
+         "Candidate files delta", "Candidate bytes delta"],
+        [[item["layout_id"], ", ".join(item["removed_columns"]) or "-",
+          ", ".join(item["remaining_columns"]) or "-", item["partition_count"],
+          item["merged_group_count"], item["file_count"],
+          item["totals"].get("candidate_files_delta", 0),
+          item["totals"].get("candidate_bytes_delta", 0)]
+         for item in evaluation["layouts"]],
+    ))
+    lines.append("")
+    for layout in evaluation["layouts"]:
+        lines.extend(_layout_section(layout))
+    return lines
 def render_markdown(result: AuditResult) -> str:
     summary = result.summary
     counts = summary["counts"]
@@ -95,6 +143,7 @@ def render_markdown(result: AuditResult) -> str:
     lines.extend(["", "## Query details", ""])
     for query in result.queries:
         lines.extend(_query_section(query))
+    lines.extend(_layout_evaluation_section(result.layout_evaluation))
     lines.extend(["## Diagnostics", ""])
     lines.extend(_table(
         ["ID", "Severity", "Rule", "Query", "Message"],

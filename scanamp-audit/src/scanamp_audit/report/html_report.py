@@ -36,6 +36,50 @@ def _table(headers: list[str], rows: list[list[Any]]) -> str:
     return f"<table><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table>"
 def _severity(value: str) -> str:
     return f'<span class="{html_escape(value)}">{html_escape(value)}</span>'
+def _layout_section(layout: dict[str, Any]) -> list[str]:
+    parts = [f"<h4>Layout {html_escape(layout['layout_id'])}</h4>"]
+    parts.append(_table(
+        ["Query", "Partition prune", "File prune", "Selected partitions",
+         "Candidate files", "Files delta", "Candidate bytes", "Bytes delta", "Reasons"],
+        [[item["query_id"], item["partition_prune_ratio"],
+          item["candidate_file_prune_ratio"],
+          f"{item['selected_partition_count']} of {item['partition_count']}",
+          item["candidate_files"], item["candidate_files_delta"],
+          item["candidate_bytes"], item["candidate_bytes_delta"],
+          ", ".join(item["reasons"]) or "-"]
+         for item in layout["queries"]],
+    ))
+    return parts
+def _layout_evaluation_section(evaluation: dict[str, Any]) -> list[str]:
+    if not evaluation:
+        return []
+    parts = [
+        "<h2>Partition layout evaluation</h2>",
+        _table(["Column", "Type", "Cardinality", "Single-file partitions", "Share",
+                "Files min/median/max", "Bytes min/median/max"],
+               [[item["column"], item["type"], item["cardinality"],
+                 f"{item['single_file_partition_count']} of {item['cardinality']}",
+                 item["single_file_partition_ratio"],
+                 f"{item['file_count_distribution']['min']} / "
+                 f"{item['file_count_distribution']['median']} / "
+                 f"{item['file_count_distribution']['max']}",
+                 f"{item['byte_size_distribution']['min']} / "
+                 f"{item['byte_size_distribution']['median']} / "
+                 f"{item['byte_size_distribution']['max']}"]
+                for item in evaluation["columns"]]),
+        "<h3>Layout comparison</h3>",
+        _table(["Layout", "Removed", "Remaining", "Partitions", "Merged groups", "Files",
+                "Candidate files delta", "Candidate bytes delta"],
+               [[item["layout_id"], ", ".join(item["removed_columns"]) or "-",
+                 ", ".join(item["remaining_columns"]) or "-", item["partition_count"],
+                 item["merged_group_count"], item["file_count"],
+                 item["totals"].get("candidate_files_delta", 0),
+                 item["totals"].get("candidate_bytes_delta", 0)]
+                for item in evaluation["layouts"]]),
+    ]
+    for layout in evaluation["layouts"]:
+        parts.extend(_layout_section(layout))
+    return parts
 def render_html(result: AuditResult) -> str:
     summary = result.summary
     counts = summary["counts"]
@@ -121,6 +165,7 @@ def render_html(result: AuditResult) -> str:
                             [[item["path"], item["decision"], item["reason"],
                               ", ".join(item["stats_missing_columns"]) or "-"]
                              for item in query["files"]["decisions"]]))
+    parts.extend(_layout_evaluation_section(result.layout_evaluation))
     parts.extend(["<h2>Diagnostics</h2>"])
     for item in result.diagnostics:
         parts.extend([

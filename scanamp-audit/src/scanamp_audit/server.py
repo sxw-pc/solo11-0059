@@ -81,6 +81,36 @@ _RUN = _BASE.replace("{% block body %}{% endblock %}", """
 <p><strong>Suggestion:</strong> {{ d.suggestion }}</p>
 <pre>{{ d.evidence | tojson(indent=2) }}</pre>{% endfor %}
 {% else %}<p>No diagnostics.</p>{% endif %}
+<h2>Partition layout evaluation</h2>
+{% if run.layout_evaluation %}
+<table><thead><tr><th>Column</th><th>Cardinality</th><th>Single-file partitions</th>
+<th>Share</th><th>Files min/median/max</th><th>Bytes min/median/max</th></tr></thead><tbody>
+{% for c in run.layout_evaluation.columns %}<tr><td>{{ c.column }}</td><td>{{ c.cardinality }}</td>
+<td>{{ c.single_file_partition_count }} of {{ c.cardinality }}</td>
+<td>{{ c.single_file_partition_ratio }}</td>
+<td>{{ c.file_count_distribution.min }} / {{ c.file_count_distribution.median }} / {{ c.file_count_distribution.max }}</td>
+<td>{{ c.byte_size_distribution.min }} / {{ c.byte_size_distribution.median }} / {{ c.byte_size_distribution.max }}</td>
+</tr>{% endfor %}</tbody></table>
+<table><thead><tr><th>Layout</th><th>Removed</th><th>Remaining</th><th>Partitions</th>
+<th>Merged groups</th><th>Candidate files delta</th><th>Candidate bytes delta</th></tr></thead><tbody>
+{% for l in run.layout_evaluation.layouts %}<tr><td>{{ l.layout_id }}</td>
+<td>{{ l.removed_columns | join(", ") or "-" }}</td>
+<td>{{ l.remaining_columns | join(", ") or "-" }}</td>
+<td>{{ l.partition_count }}</td><td>{{ l.merged_group_count }}</td>
+<td>{{ l.totals.get("candidate_files_delta", 0) }}</td>
+<td>{{ l.totals.get("candidate_bytes_delta", 0) }}</td></tr>{% endfor %}</tbody></table>
+{% for l in run.layout_evaluation.layouts %}<h3>{{ l.layout_id }}</h3>
+<table><thead><tr><th>Query</th><th>Partition prune</th><th>File prune</th>
+<th>Selected partitions</th><th>Candidate files</th><th>Files delta</th>
+<th>Candidate bytes</th><th>Bytes delta</th><th>Reasons</th></tr></thead><tbody>
+{% for q in l.queries %}<tr><td>{{ q.query_id }}</td><td>{{ q.partition_prune_ratio }}</td>
+<td>{{ q.candidate_file_prune_ratio }}</td>
+<td>{{ q.selected_partition_count }} of {{ q.partition_count }}</td>
+<td>{{ q.candidate_files }}</td><td>{{ q.candidate_files_delta }}</td>
+<td>{{ q.candidate_bytes }}</td><td>{{ q.candidate_bytes_delta }}</td>
+<td>{{ q.reasons | join(", ") or "-" }}</td></tr>{% endfor %}</tbody></table>
+{% endfor %}
+{% else %}<p>No layout evaluation was recorded for this run.</p>{% endif %}
 <h2>Artifacts</h2>
 <table><thead><tr><th>Name</th><th>SHA-256</th><th>Bytes</th></tr></thead><tbody>
 {% for a in run.artifacts %}<tr><td>{{ a.name }}</td><td>{{ a.sha256 }}</td>

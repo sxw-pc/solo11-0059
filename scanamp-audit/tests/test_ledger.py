@@ -23,7 +23,19 @@ def test_record_query_and_idempotent_rerun(demo_result, tmp_path):
     assert {item["name"] for item in run["artifacts"]} == {
         "report.json", "report.md", "report.html", "summary.json"}
     assert run["fingerprints"]["manifest"] == demo_result.summary["fingerprints"]["manifest"]
+    assert run["layout_evaluation"] == demo_result.layout_evaluation
     assert ledger.get_run("does-not-exist") is None
+    ledger.close()
+
+def test_layout_evaluation_row_is_replaced_not_duplicated(demo_result, tmp_path):
+    path = tmp_path / "ledger.sqlite"
+    ledger = open_ledger(path)
+    ledger.record_run(demo_result, [])
+    ledger.record_run(demo_result, [])
+    rows = ledger.connection.execute(
+        "SELECT COUNT(*) FROM layout_evaluations WHERE run_id = ?", ("demo-run",)
+    ).fetchone()[0]
+    assert rows == 1
     ledger.close()
 
 def test_read_only_ledger_rejects_writes(demo_ledger):

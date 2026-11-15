@@ -16,6 +16,7 @@ def build_report(result: AuditResult) -> dict[str, Any]:
         "queries": result.queries,
         "diagnostics": result.diagnostics,
         "summary": result.summary,
+        "layout_evaluation": result.layout_evaluation,
     }
 def write_json(path: str | Path, data: Any) -> None:
     text = json.dumps(data, sort_keys=True, indent=2, ensure_ascii=False) + "\n"

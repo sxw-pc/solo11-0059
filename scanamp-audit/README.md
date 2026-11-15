@@ -77,6 +77,15 @@ run_id=demo-run report_dir=var/demo-run queries=8 diagnostics=13 critical=2 warn
 - `q07_null_status` 只过滤数据列，没有任何分区过滤，放大倍数为 `64.75`，同时触发 `PARTITION_KEY_UNFILTERED`。
 - 汇总扫描放大为 `1.851562`，扫描 28 个文件次 / 2370 字节，估计命中 1280 字节。
 
+### 分区布局评估
+
+`summary.json`、`report.json/md/html` 和 ledger 都包含 `layout_evaluation` 段落。它在当前布局之外，对每个分区列（以及多列组合）构造“移除该列”的反事实布局，把旧分区按剩余列合并后对 8 条查询重新裁剪：
+
+- `dt` 的基数为 3、`region` 的基数为 4；单文件分区占比分别为 `0.333333` 和 `0.75`。
+- 移除 `dt` 后 `region=alpha` 合并成 1 个新分区（3 个文件、254 字节）；`q08_in_and_between` 的分区裁剪率由 `0.4` 升到 `0.5`。
+- 移除 `region` 后 `q05_missing_user_stats` 失去唯一分区过滤列，反事实布局下保守保留全部 3 个新分区（6 个文件、497 字节），标记 `conservative_all_partitions: true`，而不是简单把裁剪率置零。
+- 布局按“移除列数 → 列名元组”排序，`layouts[0]` 恒为 `current`，输出确定。
+
 `summary.json` 不包含运行时间字段，因此相同输入、相同配置、相同 `--run-id` 会产生逐字节相同的 summary。`report.json`、`report.md`、`report.html` 中的 `generated_at` 是唯一允许变化的运行时字段。
 
 ## 输入目录约定
@@ -232,8 +241,8 @@ pytest -q
 
 按 `find src tests -name '*.py'` 统计（不含 fixture、golden 和生成报告）：
 
-- 源码 3722 行，测试 682 行，合计 4404 行，满足 2500–4500 行约束。
-- 单文件最大 260 行（`src/scanamp_audit/expr/evaluator.py`），满足单文件不超过 300 行约束。
+- 源码 4167 行，测试 965 行，合计 5132 行；相比布局评估功能新增前（4404 行）的增量集中在 `engine/layout_evaluator.py` 及其测试。
+- 单文件最大 289 行（`src/scanamp_audit/engine/layout_evaluator.py`），满足单文件不超过 300 行约束。
 - 为满足行数预算，模块内采用紧凑的物理行风格；逻辑分层和文档仍保持独立。
 
 ## 已知限制

@@ -26,8 +26,11 @@ def _query_result(
         if part.partition_id in selected
         for item in part.files
     ]
-    file_result = prune_files(table, files, query.predicate, config.default_selectivity,
-                              analysis["columns"])
+    file_result = prune_files(
+        table, files, query.predicate, config.default_selectivity,
+        analysis["columns"],
+        interval_width_threshold=config.selectivity_interval_width_threshold,
+    )
     metrics = compute_metrics(table, partition, file_result)
     branches = compute_or_branches(query.predicate, table, config.default_selectivity,
                                    analysis["columns"])

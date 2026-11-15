@@ -148,7 +148,10 @@ def parse_config(data: Any, *, source_name: str = "audit.yaml", location: str = 
             details={"supported": ["1.0"]},
         )
     estimation = _expect_mapping(mapping.get("estimation", {}), location, "estimation")
-    unknown_est = set(estimation) - {"default_selectivity"}
+    unknown_est = set(estimation) - {
+        "default_selectivity",
+        "selectivity_interval_width_threshold",
+    }
     if unknown_est:
         raise ConfigError(
             "unknown estimation key",
@@ -169,6 +172,19 @@ def parse_config(data: Any, *, source_name: str = "audit.yaml", location: str = 
             field="estimation.default_selectivity",
             reason="INVALID_SELECTIVITY",
         )
+    width_threshold = estimation.get("selectivity_interval_width_threshold", 0.8)
+    if (
+        isinstance(width_threshold, bool)
+        or not isinstance(width_threshold, (int, float))
+        or not 0 <= float(width_threshold) <= 1
+    ):
+        raise ConfigError(
+            "selectivity_interval_width_threshold must be between 0 and 1",
+            location=location,
+            field="estimation.selectivity_interval_width_threshold",
+            reason="INVALID_THRESHOLD",
+        )
+    width_threshold = float(width_threshold)
     report = _expect_mapping(mapping.get("report", {}), location, "report")
     unknown_report = set(report) - {"top_n"}
     if unknown_report:
@@ -208,6 +224,7 @@ def parse_config(data: Any, *, source_name: str = "audit.yaml", location: str = 
         top_n=top_n,
         fingerprint="",
         source_name=source_name,
+        selectivity_interval_width_threshold=width_threshold,
     )
     config.fingerprint = fingerprint(config.to_dict())
     return config

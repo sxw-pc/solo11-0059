@@ -158,6 +158,9 @@ class AuditConfig:
     top_n: int
     fingerprint: str
     source_name: str
+    # Diagnostic-only threshold for selectivity intervals; not part of
+    # to_dict() so the config fingerprint remains stable.
+    selectivity_interval_width_threshold: float = 0.8
     def rule(self, rule_id: str) -> RuleConfig:
         return self.rules[rule_id]
     def enabled(self, rule_id: str) -> bool:

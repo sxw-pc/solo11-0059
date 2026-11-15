@@ -19,6 +19,12 @@ def compute_metrics(
     scanned_rows = files["scanned_rows"]
     matched_bytes = files["estimated_matched_bytes"]
     amplification = min(round_float(scanned_bytes / max(matched_bytes, 1)), 1_000_000.0)
+    # Confidence lower bound on matched bytes -> worst-case (upper) bound on
+    # scan amplification. Diagnostic only; scan_amplification above is unchanged.
+    matched_bytes_low = files["estimated_matched_bytes_low"]
+    amplification_upper = min(
+        round_float(scanned_bytes / max(matched_bytes_low, 1)), 1_000_000.0
+    )
     return {
         "table_files": table_files,
         "table_bytes": table_bytes,
@@ -31,11 +37,17 @@ def compute_metrics(
         "scanned_rows": scanned_rows,
         "estimated_matched_rows": files["estimated_matched_rows"],
         "estimated_matched_bytes": matched_bytes,
+        "estimated_matched_bytes_low": matched_bytes_low,
+        "estimated_matched_bytes_high": files["estimated_matched_bytes_high"],
+        "estimated_matched_rows_low": files["estimated_matched_rows_low"],
+        "estimated_matched_rows_high": files["estimated_matched_rows_high"],
+        "wide_interval_file_count": files["wide_interval_file_count"],
+        "scan_amplification": amplification,
+        "scan_amplification_upper_bound": amplification_upper,
         "partition_prune_ratio": ratio(table_files - partition_files, table_files),
         "stats_prune_ratio": ratio(partition_files - scanned_files, partition_files),
         "total_prune_ratio": ratio(table_files - scanned_files, table_files),
         "scan_byte_ratio": ratio(scanned_bytes, table_bytes),
-        "scan_amplification": amplification,
     }
 def compute_or_branches(
     predicate: dict[str, Any] | None,
